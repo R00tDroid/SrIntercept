@@ -4,8 +4,9 @@ file(GLOB_RECURSE SourceFiles
 
 CPMAddPackage("gh:microsoft/detours#v4.0.1")
 
-file(GLOB_RECURSE DetoursSource
-    ${detours_SOURCE_DIR}/src/*.*
+set(DetoursSource
+    ${detours_SOURCE_DIR}/src/detours.h
+    ${detours_SOURCE_DIR}/src/detours.cpp
 )
 
 add_library(Detours STATIC
