@@ -13,10 +13,15 @@ add_library(Detours STATIC
     ${DetoursSource}
 )
 
-add_library(Intecept SHARED
+add_library(Intercept SHARED
     ${SourceFiles}
 )
 
-target_link_libraries(Intecept
+target_link_libraries(Intercept
     Detours
+)
+
+target_include_directories(Intercept PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/Source
+    ${detours_SOURCE_DIR}/src
 )
