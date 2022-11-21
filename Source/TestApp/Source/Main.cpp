@@ -3,7 +3,8 @@
 HWND window = nullptr;
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
-IDXGISwapChain* swapchain = nullptr;
+IDXGISwapChain* dxgiSwapchain = nullptr;
+ID3D11RenderTargetView* backBufferView = nullptr;
 
 bool InitWindow()
 {
@@ -50,9 +51,23 @@ bool InitD3D()
     swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
     swapchainDesc.OutputWindow = window;
 
-    D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapchainDesc, &swapchain, &d3dDevice, nullptr, &d3dContext);
+    D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapchainDesc, &dxgiSwapchain, &d3dDevice, nullptr, &d3dContext);
+
+    ID3D11Texture2D* backBuffer;
+    dxgiSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+    d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
 
     return true;
+}
+
+void RenderFrame()
+{
+    d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
+
+    float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
+    d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
+
+    dxgiSwapchain->Present(0, 0);
 }
 
 int main()
@@ -63,6 +78,7 @@ int main()
     while (true)
     {
         UpdateWindow();
+        RenderFrame();
     }
 
     return 0;
