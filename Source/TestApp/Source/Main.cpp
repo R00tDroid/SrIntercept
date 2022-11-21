@@ -12,6 +12,8 @@ bool InitD3D()
 #endif
 
     D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, nullptr, &d3dContext);
+
+    return true;
 }
 
 int main()
