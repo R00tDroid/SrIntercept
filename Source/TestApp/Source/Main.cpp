@@ -3,6 +3,7 @@
 HWND window = nullptr;
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
+IDXGISwapChain* swapchain = nullptr;
 
 bool InitWindow()
 {
@@ -38,7 +39,18 @@ bool InitD3D()
     creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-    D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, nullptr, &d3dContext);
+    DXGI_SWAP_CHAIN_DESC swapchainDesc;
+    ZeroMemory(&swapchainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+    swapchainDesc.Windowed = TRUE;
+    swapchainDesc.BufferCount = 2;
+    swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchainDesc.SampleDesc.Count = 1;
+    swapchainDesc.SampleDesc.Quality = 0;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    swapchainDesc.OutputWindow = window;
+
+    D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapchainDesc, &swapchain, &d3dDevice, nullptr, &d3dContext);
 
     return true;
 }
