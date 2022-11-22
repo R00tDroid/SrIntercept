@@ -12,6 +12,8 @@ add_executable(TestApp
     ${SourceFiles}
 )
 
+target_compile_features(TestApp PRIVATE cxx_std_17)
+
 target_link_libraries(TestApp PRIVATE
     simulatedreality
     srDirectX::srDirectX

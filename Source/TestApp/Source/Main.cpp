@@ -1,10 +1,38 @@
 #include <d3d11.h>
+#include <vector>
+#include <filesystem>
 
-HWND window = nullptr;
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
+
 IDXGISwapChain* dxgiSwapchain = nullptr;
 ID3D11RenderTargetView* backBufferView = nullptr;
+HWND window = nullptr;
+
+ID3D11VertexShader* vertexShader = nullptr;
+ID3D11PixelShader* pixelShader = nullptr;
+ID3D11InputLayout* inputLayout = nullptr;
+
+std::filesystem::path appDirectory;
+
+typedef std::vector<unsigned char> BinaryBlob;
+BinaryBlob LoadFile(std::filesystem::path filePath)
+{
+    FILE* file = nullptr;
+    fopen_s(&file, filePath.string().c_str(), "rb");
+
+    fseek(file, 0, SEEK_END);
+    size_t fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    BinaryBlob blob;
+    blob.resize(fileSize);
+    fread(blob.data(), sizeof(unsigned char), fileSize, file);
+
+    fclose(file);
+
+    return blob;
+}
 
 bool InitWindow()
 {
@@ -32,6 +60,25 @@ void UpdateWindow()
     }
 }
 
+bool InitPipeline()
+{
+    BinaryBlob vertexBlob = LoadFile(appDirectory / "Cube_vs.cso");
+    BinaryBlob pixelBlob = LoadFile(appDirectory / "Cube_ps.cso");
+
+    d3dDevice->CreateVertexShader(vertexBlob.data(), vertexBlob.size(), nullptr, &vertexShader);
+    d3dDevice->CreatePixelShader(pixelBlob.data(), pixelBlob.size(), nullptr, &pixelShader);
+
+    D3D11_INPUT_ELEMENT_DESC inputElements[] =
+    {
+        { "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+
+    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), vertexBlob.data(), vertexBlob.size(), &inputLayout);
+
+    return true;
+}
+
 bool InitD3D()
 {
     D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
@@ -57,6 +104,8 @@ bool InitD3D()
     dxgiSwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
 
+    if (!InitPipeline()) return false;
+
     return true;
 }
 
@@ -72,6 +121,11 @@ void RenderFrame()
 
 int main()
 {
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(nullptr, exePath, MAX_PATH);
+
+    appDirectory = std::filesystem::path(std::string(exePath)).parent_path();
+
     if (!InitWindow()) return -1;
     if (!InitD3D()) return -1;
 
