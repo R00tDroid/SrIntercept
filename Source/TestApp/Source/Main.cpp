@@ -186,7 +186,6 @@ bool InitD3D()
 
 DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth, float screenHeight, float fnear, float ffar)
 {
-    // Implementation of: Kooima, Robert. "Generalized perspective projection." J. Sch. Electron. Eng. Comput. Sci (2009).
     DirectX::XMVECTOR pa = { -screenWidth / 2, screenHeight / 2, 0 };
     DirectX::XMVECTOR pb = { screenWidth / 2, screenHeight / 2, 0 };
     DirectX::XMVECTOR pc = { -screenWidth / 2, -screenHeight / 2, 0 };
@@ -195,35 +194,28 @@ DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth, 
     DirectX::XMVECTOR vu = { 0, 1, 0 };
     DirectX::XMVECTOR vn = { 0, 0, 1 };
 
-    // Compute the screen corner vectors.
     DirectX::XMVECTOR va = DirectX::XMVectorSubtract(pa, eye);
     DirectX::XMVECTOR vb = DirectX::XMVectorSubtract(pb, eye);
     DirectX::XMVECTOR vc = DirectX::XMVectorSubtract(pc, eye);
 
-    // Find the distance from the eye to screen plane.
-    float distance = -1 * DirectX::XMVector3Dot(va, vn).m128_f32[0];
+    float screenDistance = -1 * DirectX::XMVector3Dot(va, vn).m128_f32[0];
 
-    // Find the extent of the perpendicular projection.
-    float l = DirectX::XMVector3Dot(vr, va).m128_f32[0] * fnear / distance;
-    float r = DirectX::XMVector3Dot(vr, vb).m128_f32[0] * fnear / distance;
-    float b = DirectX::XMVector3Dot(vu, vc).m128_f32[0] * fnear / distance;
-    float t = DirectX::XMVector3Dot(vu, va).m128_f32[0] * fnear / distance;
+    float left = DirectX::XMVector3Dot(vr, va).m128_f32[0] * fnear / screenDistance;
+    float right = DirectX::XMVector3Dot(vr, vb).m128_f32[0] * fnear / screenDistance;
+    float top = DirectX::XMVector3Dot(vu, va).m128_f32[0] * fnear / screenDistance;
+    float bottom = DirectX::XMVector3Dot(vu, vc).m128_f32[0] * fnear / screenDistance;
 
-    float M00 = (2 * fnear) / (r - l);
-    float M11 = (2 * fnear) / (t - b);
-    float M20 = (r + l) / (r - l);
-    float M21 = (t + b) / (t - b);
-    float M22 = -(ffar + fnear) / (ffar - fnear);
-    float M23 = -1;
-    float M32 = -2 * (ffar * fnear) / (ffar - fnear);
+    float m00 = (2 * fnear) / (right - left);
+    float m11 = (2 * fnear) / (top - bottom);
+    float m20 = (right + left) / (right - left);
+    float m21 = (top + bottom) / (top - bottom);
+    float m22 = -(ffar + fnear) / (ffar - fnear);
+    float m23 = -1;
+    float m32 = -2 * (ffar * fnear) / (ffar - fnear);
 
-    DirectX::XMMATRIX frustum = DirectX::XMMATRIX(M00, 0, 0, 0, 0, M11, 0, 0, M20, M21, M22, M23, 0, 0, M32, 0);
-
+    DirectX::XMMATRIX frustum = DirectX::XMMATRIX(m00, 0, 0, 0, 0, m11, 0, 0, m20, m21, m22, m23, 0, 0, m32, 0);
     DirectX::XMMATRIX eyeOffset = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorScale(eye, -1));
-
-    DirectX::XMMATRIX Result = DirectX::XMMatrixMultiply(eyeOffset, frustum);
-
-    return Result;
+    return DirectX::XMMatrixMultiply(eyeOffset, frustum);
 }
 
 float r = 0;
