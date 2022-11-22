@@ -15,6 +15,9 @@ ID3D11InputLayout* inputLayout = nullptr;
 
 std::filesystem::path appDirectory;
 
+unsigned int renderWidth = 800;
+unsigned int renderHeight = 600;
+
 typedef std::vector<unsigned char> BinaryBlob;
 BinaryBlob LoadFile(std::filesystem::path filePath)
 {
@@ -45,7 +48,7 @@ bool InitWindow()
 
     RegisterClassExA(&winClass);
 
-    window = CreateWindowExA(WS_EX_OVERLAPPEDWINDOW, winClass.lpszClassName, "", WS_OVERLAPPEDWINDOW | WS_VISIBLE,CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, 0, 0, GetModuleHandleA(nullptr), 0);
+    window = CreateWindowExA(WS_EX_OVERLAPPEDWINDOW, winClass.lpszClassName, "", WS_OVERLAPPEDWINDOW | WS_VISIBLE,CW_USEDEFAULT, CW_USEDEFAULT, renderWidth, renderHeight, 0, 0, GetModuleHandleA(nullptr), 0);
 
     return true;
 }
