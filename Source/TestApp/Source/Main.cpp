@@ -103,6 +103,11 @@ bool InitPipeline()
     return true;
 }
 
+// 6 Sides, 2 triangles per side, 3 vertices per triangle
+#define VertexCount 6 * 2 * 3
+
+#define CubeSide(va, vb, vc, vd) corners[va], corners[vb], corners[vc], corners[vc], corners[vd], corners[va]
+
 bool InitMesh()
 {
     struct Vertex
@@ -118,15 +123,22 @@ bool InitMesh()
         { {-1, -1, 1}, {0, 0, 1} },
         { {-1, 1, 1}, {1, 0, 1} },
 
-        { {1, 1, 1}, {1, 1, 1} },
-        { {1, -1, 1}, {1, 1, 1} },
-        { {-1, -1, 1}, {1, 1, 1} },
-        { {-1, 1, 1}, {1, 1, 1} },
+        { {1, 1, -1}, {1, 1, 1} },
+        { {1, -1, -1}, {1, 1, 1} },
+        { {-1, -1, -1}, {1, 1, 1} },
+        { {-1, 1, -1}, {1, 1, 1} },
     };
 
-    Vertex triangles[1 * 2 * 3] // 6 Sides, 2 triangles per side, 3 vertices per triangle
+    Vertex triangles[VertexCount]
     {
-        corners[0], corners[1], corners[2], corners[2], corners[3], corners[0],
+        CubeSide(3, 2, 1, 0), // Front
+        CubeSide(4, 5, 6, 7), // Back
+
+        CubeSide(2, 3, 7, 6), // Left
+        CubeSide(0, 1, 5, 4), // Right
+
+        CubeSide(4, 7, 3, 0), // Top
+        CubeSide(1, 2, 6, 5) // Bottom
     };
 
     D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -205,7 +217,7 @@ void RenderFrame()
         constantBufferData->projection = DirectX::XMMatrixIdentity();
         d3dContext->Unmap(constantBuffer, 0);
 
-        d3dContext->Draw(6, 0);
+        d3dContext->Draw(VertexCount, 0);
     }
 
     d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
