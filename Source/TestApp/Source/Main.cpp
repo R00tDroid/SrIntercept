@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <DirectXMath.h>
 #include <sr/management/srcontext.h>
+#include <sr/weaver/dx11weaver.h>
 
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
@@ -29,6 +30,7 @@ struct ConstantBuffer
 ID3D11Buffer* constantBuffer = nullptr;
 
 SR::SRContext* srContext = nullptr;
+SR::DX11Weaver* srWeaver = nullptr;
 
 typedef std::vector<unsigned char> BinaryBlob;
 BinaryBlob LoadFile(std::filesystem::path filePath)
@@ -211,6 +213,8 @@ void RenderFrame()
 bool InitSR()
 {
     srContext = SR::SRContext::create();
+    srWeaver = new SR::DX11Weaver(*srContext, d3dDevice, d3dContext, renderWidth, renderHeight / 2, window);
+    srContext->initialize();
     return true;
 }
 
