@@ -12,13 +12,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     startupInfo.wShowWindow = SW_SHOW;
     ZeroMemory(&processInfo, sizeof(processInfo));
 
-    if (DetourCreateProcessWithDllExA("TestApp.exe", NULL, NULL, NULL, TRUE, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, NULL, NULL, &startupInfo, &processInfo, "Intercept.dll", NULL))
+    if (DetourCreateProcessWithDllExA("TestApp.exe", nullptr, nullptr, nullptr, false, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, nullptr, nullptr, &startupInfo, &processInfo, "Intercept.dll", nullptr))
     {
-        MessageBoxA(0, "Injected successfully", "", MB_OK + MB_ICONINFORMATION);
+        MessageBoxA(nullptr, "Injected successfully", "", MB_OK + MB_ICONINFORMATION);
     }
     else
     {
-        MessageBoxA(0, "Failed to inject", "", MB_OK + MB_ICONERROR);
+        MessageBoxA(nullptr, "Failed to inject", "", MB_OK + MB_ICONERROR);
     }
 
     ResumeThread(processInfo.hThread);
