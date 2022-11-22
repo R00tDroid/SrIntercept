@@ -54,7 +54,7 @@ bool InitD3D()
     D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapchainDesc, &dxgiSwapchain, &d3dDevice, nullptr, &d3dContext);
 
     ID3D11Texture2D* backBuffer;
-    dxgiSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+    dxgiSwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
 
     return true;
