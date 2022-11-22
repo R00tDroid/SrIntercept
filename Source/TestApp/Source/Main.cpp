@@ -18,6 +18,8 @@ std::filesystem::path appDirectory;
 unsigned int renderWidth = 800;
 unsigned int renderHeight = 600;
 
+ID3D11Buffer* vertexBuffer = nullptr;
+
 typedef std::vector<unsigned char> BinaryBlob;
 BinaryBlob LoadFile(std::filesystem::path filePath)
 {
@@ -82,6 +84,43 @@ bool InitPipeline()
     return true;
 }
 
+bool InitMesh()
+{
+    struct Vertex
+    {
+        float Position[3];
+        float Color[3];
+    };
+
+    Vertex corners[8] =
+    {
+        { {-1, -1, -1}, {1, 1, 1} },
+        { {1, -1, -1}, {1, 1, 1} },
+        { {1, 1, -1}, {1, 1, 1} },
+        { {1, -1, -1}, {1, 1, 1} },
+        { {-1, -1, 1}, {1, 1, 1} },
+        { {1, -1, 1}, {1, 1, 1} },
+        { {1, 1, 1}, {1, 1, 1} },
+        { {1, -1, 1}, {1, 1, 1} },
+    };
+
+    Vertex triangles[1 * 2 * 3] // 6 Sides, 2 triangles per side, 3 vertices per triangle
+    {
+        corners[0], corners[1], corners[2], corners[2], corners[3], corners[0],
+    };
+
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.ByteWidth = sizeof(triangles);
+    vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA vertexSubresourceData = { triangles };
+
+    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+
+    return true;
+}
+
 bool InitD3D()
 {
     D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
@@ -108,6 +147,7 @@ bool InitD3D()
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
 
     if (!InitPipeline()) return false;
+    if (!InitMesh()) return false;
 
     return true;
 }
@@ -122,6 +162,19 @@ void RenderFrame()
     d3dContext->IASetInputLayout(inputLayout);
     d3dContext->VSSetShader(vertexShader, nullptr, 0);
     d3dContext->PSSetShader(pixelShader, nullptr, 0);
+
+    UINT stride = sizeof(float) * 6;
+    UINT offset = 0;
+    d3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    for (int i = 0; i < 2; i++)
+    {
+        D3D11_VIEWPORT viewport = { (float)(i * renderWidth / 2), 0.0f, (float)renderWidth / 2, (float)renderHeight / 2, 0.0f, 1.0f };
+        d3dContext->RSSetViewports(1, &viewport);
+
+        d3dContext->Draw(6, 0);
+    }
 
     dxgiSwapchain->Present(0, 0);
 }
