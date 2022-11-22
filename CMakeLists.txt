@@ -18,6 +18,7 @@ set(DetoursSource
     ${detours_SOURCE_DIR}/src/detours.cpp
     ${detours_SOURCE_DIR}/src/disasm.cpp
     ${detours_SOURCE_DIR}/src/modules.cpp
+    ${detours_SOURCE_DIR}/src/creatwth.cpp
 )
 
 add_library(Detours STATIC
