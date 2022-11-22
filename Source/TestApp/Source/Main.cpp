@@ -2,6 +2,7 @@
 #include <vector>
 #include <filesystem>
 #include <DirectXMath.h>
+#include <sr/management/srcontext.h>
 
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
@@ -26,6 +27,8 @@ struct ConstantBuffer
     DirectX::XMMATRIX transform, projection;
 };
 ID3D11Buffer* constantBuffer = nullptr;
+
+SR::SRContext* srContext = nullptr;
 
 typedef std::vector<unsigned char> BinaryBlob;
 BinaryBlob LoadFile(std::filesystem::path filePath)
@@ -205,6 +208,12 @@ void RenderFrame()
     dxgiSwapchain->Present(0, 0);
 }
 
+bool InitSR()
+{
+    srContext = SR::SRContext::create();
+    return true;
+}
+
 int main()
 {
     char exePath[MAX_PATH];
@@ -214,6 +223,7 @@ int main()
 
     if (!InitWindow()) return -1;
     if (!InitD3D()) return -1;
+    if (!InitSR()) return -1;
 
     while (true)
     {
