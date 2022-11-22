@@ -184,12 +184,12 @@ bool InitD3D()
     return true;
 }
 
-DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth_mm, float screenHeight_mm, float fnear, float ffar)
+DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth, float screenHeight, float fnear, float ffar)
 {
     // Implementation of: Kooima, Robert. "Generalized perspective projection." J. Sch. Electron. Eng. Comput. Sci (2009).
-    DirectX::XMVECTOR pa = { -screenWidth_mm / 2, screenHeight_mm / 2, 0 };
-    DirectX::XMVECTOR pb = { screenWidth_mm / 2, screenHeight_mm / 2, 0 };
-    DirectX::XMVECTOR pc = { -screenWidth_mm / 2, -screenHeight_mm / 2, 0 };
+    DirectX::XMVECTOR pa = { -screenWidth / 2, screenHeight / 2, 0 };
+    DirectX::XMVECTOR pb = { screenWidth / 2, screenHeight / 2, 0 };
+    DirectX::XMVECTOR pc = { -screenWidth / 2, -screenHeight / 2, 0 };
 
     DirectX::XMVECTOR vr = { 1, 0, 0 };
     DirectX::XMVECTOR vu = { 0, 1, 0 };
@@ -245,7 +245,7 @@ void RenderFrame()
 
     d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
-    float cubeSize = 20;
+    float cubeSize = 10;
 
     for (int i = 0; i < 2; i++)
     {
@@ -255,8 +255,8 @@ void RenderFrame()
         D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
         d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
         ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
-        constantBufferData->transform = DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize);
-        constantBufferData->projection = CalculateProjection({0, 10, -60}, 69, 39, 0.1f, 200.0f);
+        constantBufferData->transform = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize));
+        constantBufferData->projection = DirectX::XMMatrixTranspose(CalculateProjection({0, 0, 60}, 69, 39, 0.1f, 200.0f));
         d3dContext->Unmap(constantBuffer, 0);
 
         d3dContext->Draw(VertexCount, 0);
