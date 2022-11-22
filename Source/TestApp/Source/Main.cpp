@@ -73,8 +73,8 @@ bool InitPipeline()
 
     D3D11_INPUT_ELEMENT_DESC inputElements[] =
     {
-        { "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        { "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
     d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), vertexBlob.data(), vertexBlob.size(), &inputLayout);
@@ -86,7 +86,7 @@ bool InitD3D()
 {
     D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
     UINT creationFlags = 0;
-#if defined(DEBUG_BUILD)
+#ifndef _NDEBUG
     creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
