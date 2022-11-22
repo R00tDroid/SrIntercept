@@ -185,6 +185,8 @@ void RenderFrame()
 
     d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
+    float cubeSize = 0.5f;
+
     for (int i = 0; i < 2; i++)
     {
         D3D11_VIEWPORT viewport = { (float)(i * renderWidth / 2), 0.0f, (float)renderWidth / 2, (float)renderHeight / 2, 0.0f, 1.0f };
@@ -193,7 +195,7 @@ void RenderFrame()
         D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
         d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
         ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
-        constantBufferData->transform = DirectX::XMMatrixIdentity();
+        constantBufferData->transform = DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize);
         constantBufferData->projection = DirectX::XMMatrixIdentity();
         d3dContext->Unmap(constantBuffer, 0);
 
