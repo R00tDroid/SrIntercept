@@ -1,6 +1,7 @@
 #include <d3d11.h>
 #include <vector>
 #include <filesystem>
+#include <DirectXMath.h>
 
 ID3D11Device* d3dDevice = nullptr;
 ID3D11DeviceContext* d3dContext = nullptr;
@@ -19,6 +20,12 @@ unsigned int renderWidth = 800;
 unsigned int renderHeight = 600;
 
 ID3D11Buffer* vertexBuffer = nullptr;
+
+struct ConstantBuffer
+{
+    DirectX::XMMATRIX transform, projection;
+};
+ID3D11Buffer* constantBuffer = nullptr;
 
 typedef std::vector<unsigned char> BinaryBlob;
 BinaryBlob LoadFile(std::filesystem::path filePath)
@@ -80,6 +87,13 @@ bool InitPipeline()
     };
 
     d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), vertexBlob.data(), vertexBlob.size(), &inputLayout);
+
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = sizeof(ConstantBuffer);
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    d3dDevice->CreateBuffer(&desc, nullptr, &constantBuffer);
 
     return true;
 }
@@ -169,10 +183,19 @@ void RenderFrame()
     d3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
     d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
     for (int i = 0; i < 2; i++)
     {
         D3D11_VIEWPORT viewport = { (float)(i * renderWidth / 2), 0.0f, (float)renderWidth / 2, (float)renderHeight / 2, 0.0f, 1.0f };
         d3dContext->RSSetViewports(1, &viewport);
+
+        D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
+        d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
+        ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
+        constantBufferData->transform = DirectX::XMMatrixIdentity();
+        constantBufferData->projection = DirectX::XMMatrixIdentity();
+        d3dContext->Unmap(constantBuffer, 0);
 
         d3dContext->Draw(6, 0);
     }
