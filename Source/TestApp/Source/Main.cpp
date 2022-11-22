@@ -250,6 +250,12 @@ void RenderFrame()
     float cubeSize = 10;
     r += 0.01f;
 
+    DirectX::XMVECTOR eyes[2] = 
+    {
+        {-3, 0, 60},
+        {3, 0, 60}
+    };
+
     for (int i = 0; i < 2; i++)
     {
         D3D11_VIEWPORT viewport = { (float)(i * renderWidth / 2), 0.0f, (float)renderWidth / 2, (float)renderHeight / 2, 0.0f, 1.0f };
@@ -259,7 +265,7 @@ void RenderFrame()
         d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
         ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
         constantBufferData->transform = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize) * DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(r)));
-        constantBufferData->projection = DirectX::XMMatrixTranspose(CalculateProjection({0, 0, 60}, 69, 39, 0.1f, 200.0f));
+        constantBufferData->projection = DirectX::XMMatrixTranspose(CalculateProjection(eyes[i], 69, 39, 0.1f, 200.0f));
         d3dContext->Unmap(constantBuffer, 0);
 
         d3dContext->Draw(VertexCount, 0);
