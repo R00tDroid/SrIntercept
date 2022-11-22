@@ -174,10 +174,11 @@ bool InitD3D()
 
 void RenderFrame()
 {
-    d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
+    ID3D11RenderTargetView* frameBuffer = srWeaver->getFrameBuffer();
+    d3dContext->OMSetRenderTargets(1, &frameBuffer, nullptr);
 
     float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
-    d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
+    d3dContext->ClearRenderTargetView(frameBuffer, backgroundColor);
 
     d3dContext->IASetInputLayout(inputLayout);
     d3dContext->VSSetShader(vertexShader, nullptr, 0);
@@ -206,6 +207,13 @@ void RenderFrame()
 
         d3dContext->Draw(6, 0);
     }
+
+    d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
+
+    D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)renderWidth, (float)renderHeight, 0.0f, 1.0f };
+    d3dContext->RSSetViewports(1, &viewport);
+
+    srWeaver->weave(renderWidth, renderHeight);
 
     dxgiSwapchain->Present(0, 0);
 }
