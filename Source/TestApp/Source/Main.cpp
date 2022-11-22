@@ -226,6 +226,8 @@ DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth, 
     return Result;
 }
 
+float r = 0;
+
 void RenderFrame()
 {
     ID3D11RenderTargetView* frameBuffer = srWeaver->getFrameBuffer();
@@ -246,6 +248,7 @@ void RenderFrame()
     d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
     float cubeSize = 10;
+    r += 0.01f;
 
     for (int i = 0; i < 2; i++)
     {
@@ -255,7 +258,7 @@ void RenderFrame()
         D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
         d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
         ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
-        constantBufferData->transform = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize));
+        constantBufferData->transform = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize) * DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(r)));
         constantBufferData->projection = DirectX::XMMatrixTranspose(CalculateProjection({0, 0, 60}, 69, 39, 0.1f, 200.0f));
         d3dContext->Unmap(constantBuffer, 0);
 
