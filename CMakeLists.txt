@@ -9,6 +9,13 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
+foreach(ConfigName ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${ConfigName} ConfigName)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${ConfigName} "${CMAKE_CURRENT_LIST_DIR}/Bin" CACHE PATH "" FORCE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${ConfigName} "${CMAKE_CURRENT_LIST_DIR}/Bin" CACHE PATH "" FORCE)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${ConfigName} "${CMAKE_CURRENT_LIST_DIR}/Bin" CACHE PATH "" FORCE)
+endforeach()
+
 include(CMake/CPM.cmake)
 
 CPMAddPackage("gh:microsoft/detours#v4.0.1")
