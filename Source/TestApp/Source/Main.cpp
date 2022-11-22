@@ -116,6 +116,10 @@ void RenderFrame()
     float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
     d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
 
+    d3dContext->IASetInputLayout(inputLayout);
+    d3dContext->VSSetShader(vertexShader, nullptr, 0);
+    d3dContext->PSSetShader(pixelShader, nullptr, 0);
+
     dxgiSwapchain->Present(0, 0);
 }
 
