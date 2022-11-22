@@ -2,7 +2,7 @@ file(GLOB_RECURSE SourceFiles
     ${CMAKE_CURRENT_LIST_DIR}/Source/*.*
 )
 
-add_executable(Injector
+add_executable(Injector WIN32
     ${SourceFiles}
 )
 
