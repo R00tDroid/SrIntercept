@@ -184,6 +184,48 @@ bool InitD3D()
     return true;
 }
 
+DirectX::XMMATRIX CalculateProjection(DirectX::XMVECTOR eye, float screenWidth_mm, float screenHeight_mm, float fnear, float ffar)
+{
+    // Implementation of: Kooima, Robert. "Generalized perspective projection." J. Sch. Electron. Eng. Comput. Sci (2009).
+    DirectX::XMVECTOR pa = { -screenWidth_mm / 2, screenHeight_mm / 2, 0 };
+    DirectX::XMVECTOR pb = { screenWidth_mm / 2, screenHeight_mm / 2, 0 };
+    DirectX::XMVECTOR pc = { -screenWidth_mm / 2, -screenHeight_mm / 2, 0 };
+
+    DirectX::XMVECTOR vr = { 1, 0, 0 };
+    DirectX::XMVECTOR vu = { 0, 1, 0 };
+    DirectX::XMVECTOR vn = { 0, 0, 1 };
+
+    // Compute the screen corner vectors.
+    DirectX::XMVECTOR va = DirectX::XMVectorSubtract(pa, eye);
+    DirectX::XMVECTOR vb = DirectX::XMVectorSubtract(pb, eye);
+    DirectX::XMVECTOR vc = DirectX::XMVectorSubtract(pc, eye);
+
+    // Find the distance from the eye to screen plane.
+    float distance = -1 * DirectX::XMVector3Dot(va, vn).m128_f32[0];
+
+    // Find the extent of the perpendicular projection.
+    float l = DirectX::XMVector3Dot(vr, va).m128_f32[0] * fnear / distance;
+    float r = DirectX::XMVector3Dot(vr, vb).m128_f32[0] * fnear / distance;
+    float b = DirectX::XMVector3Dot(vu, vc).m128_f32[0] * fnear / distance;
+    float t = DirectX::XMVector3Dot(vu, va).m128_f32[0] * fnear / distance;
+
+    float M00 = (2 * fnear) / (r - l);
+    float M11 = (2 * fnear) / (t - b);
+    float M20 = (r + l) / (r - l);
+    float M21 = (t + b) / (t - b);
+    float M22 = -(ffar + fnear) / (ffar - fnear);
+    float M23 = -1;
+    float M32 = -2 * (ffar * fnear) / (ffar - fnear);
+
+    DirectX::XMMATRIX frustum = DirectX::XMMATRIX(M00, 0, 0, 0, 0, M11, 0, 0, M20, M21, M22, M23, 0, 0, M32, 0);
+
+    DirectX::XMMATRIX eyeOffset = DirectX::XMMatrixTranslationFromVector(DirectX::XMVectorScale(eye, -1));
+
+    DirectX::XMMATRIX Result = DirectX::XMMatrixMultiply(eyeOffset, frustum);
+
+    return Result;
+}
+
 void RenderFrame()
 {
     ID3D11RenderTargetView* frameBuffer = srWeaver->getFrameBuffer();
@@ -203,7 +245,7 @@ void RenderFrame()
 
     d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
-    float cubeSize = 0.5f;
+    float cubeSize = 20;
 
     for (int i = 0; i < 2; i++)
     {
@@ -214,7 +256,7 @@ void RenderFrame()
         d3dContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
         ConstantBuffer* constantBufferData = static_cast<ConstantBuffer*>(constantBufferMapping.pData);
         constantBufferData->transform = DirectX::XMMatrixScaling(cubeSize, cubeSize, cubeSize);
-        constantBufferData->projection = DirectX::XMMatrixIdentity();
+        constantBufferData->projection = CalculateProjection({0, 10, -60}, 69, 39, 0.1f, 200.0f);
         d3dContext->Unmap(constantBuffer, 0);
 
         d3dContext->Draw(VertexCount, 0);
