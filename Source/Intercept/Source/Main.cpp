@@ -19,7 +19,14 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             DetourRestoreAfterWith();
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
-            FunctionPointer weave = FindFunction("SimulatedRealityDirectX.dll", "SR::DX11WeaverBase::Weave");
+
+            FunctionPointer weave = FindFunction("SimulatedRealityDirectX.dll", "?weave@DX11WeaverBase@SR@@QEAAXII@Z");
+            if (weave == nullptr)
+            {
+                MessageBoxA(nullptr, "Failed to hook SR::DX11WeaverBase::Weave", "", MB_OK + MB_ICONERROR);
+                exit(-1);
+            }
+
             AttachFunction<DX11WeaverBase_Weave_t>(weave, DX11WeaverBase_Weave, Override_DX11WeaverBase_Weave);
             DetourTransactionCommit();
             break;
