@@ -14,10 +14,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
     if (DetourCreateProcessWithDllExA("TestApp.exe", nullptr, nullptr, nullptr, false, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, nullptr, nullptr, &startupInfo, &processInfo, "Intercept.dll", nullptr))
     {
-        MessageBoxA(nullptr, "Injected successfully", "", MB_OK + MB_ICONINFORMATION);
+        //TODO Log success
     }
     else
     {
+        //TODO Log failure
         MessageBoxA(nullptr, "Failed to inject", "", MB_OK + MB_ICONERROR);
     }
 
