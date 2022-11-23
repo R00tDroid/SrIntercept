@@ -19,7 +19,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             DetourRestoreAfterWith();
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
-            AttachFunction<DX11WeaverBase_Weave_t>("SimulatedRealityDirectX.dll", "SR::DX11WeaverBase::Weave", DX11WeaverBase_Weave, Override_DX11WeaverBase_Weave);
+            FunctionPointer weave = FindFunction("SimulatedRealityDirectX.dll", "SR::DX11WeaverBase::Weave");
+            AttachFunction<DX11WeaverBase_Weave_t>(weave, DX11WeaverBase_Weave, Override_DX11WeaverBase_Weave);
             DetourTransactionCommit();
             break;
         }
