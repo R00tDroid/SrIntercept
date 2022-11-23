@@ -5,7 +5,7 @@
 typedef void(__thiscall* DX11WeaverBase_Weave_t)(void* __this, unsigned int width, unsigned int height);
 DX11WeaverBase_Weave_t DX11WeaverBase_Weave;
 
-void __fastcall Override_DX11WeaverBase_Weave(void* __this, unsigned int width, unsigned int height)
+__declspec(dllexport) void __fastcall Override_DX11WeaverBase_Weave(void* __this, unsigned int width, unsigned int height)
 {
     DX11WeaverBase_Weave(__this, width, height);
 }
