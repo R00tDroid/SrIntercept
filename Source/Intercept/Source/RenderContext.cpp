@@ -1,4 +1,6 @@
 #include "RenderContext.hpp"
+#include "imgui.h"
+#include "backends/imgui_impl_dx11.h"
 
 std::map<ID3D11RenderTargetView*, RenderContext*> RenderContext::Instances;
 
@@ -21,6 +23,19 @@ void RenderContext::Render()
     context->OMGetRenderTargets(1, &restoreView, nullptr);
     context->OMSetRenderTargets(1, &targetView, nullptr);
 
+    ImGui_ImplDX11_NewFrame();
+    ImGui::NewFrame();
+
+    if (ImGui::Begin("Sr Intercept"))
+    {
+        ImGui::Text("0x%x", targetView);
+        ImGui::End();
+    }
+
+    ImGui::Render();
+
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
     if (restoreView != nullptr) 
     {
         context->OMSetRenderTargets(1, &restoreView, nullptr);
@@ -39,4 +54,9 @@ RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(
     device->GetImmediateContext(&context);
 
     Texture->Release();
+
+    ImGui::CreateContext();
+    ImGui_ImplDX11_Init(device, context);
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(float(targetDesc.Width / 2), float(targetDesc.Height));
 }
