@@ -17,6 +17,15 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
 
 void RenderContext::Render()
 {
+    ID3D11RenderTargetView* restoreView = nullptr;
+    context->OMGetRenderTargets(1, &restoreView, nullptr);
+    context->OMSetRenderTargets(1, &targetView, nullptr);
+
+    if (restoreView != nullptr) 
+    {
+        context->OMSetRenderTargets(1, &restoreView, nullptr);
+        restoreView->Release();
+    }
 }
 
 RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(inTargetView)
