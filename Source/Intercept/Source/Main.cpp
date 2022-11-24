@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <detours.h>
 #include "HookUtils.hpp"
+#include "RenderContext.hpp"
 
 typedef void(__thiscall* DX11WeaverBase_weave_t)(void* object, unsigned int width, unsigned int height);
 DX11WeaverBase_weave_t DX11WeaverBase_weave;
@@ -14,16 +15,8 @@ __declspec(dllexport) void __fastcall Override_DX11WeaverBase_weave(void* object
     ID3D11RenderTargetView* frameBuffer = DX11WeaverBase_getFrameBuffer(object);
     if (frameBuffer != nullptr)
     {
-        D3D11_RENDER_TARGET_VIEW_DESC Desc;
-        frameBuffer->GetDesc(&Desc);
-
-        ID3D11Texture2D* Texture = nullptr;
-        frameBuffer->GetResource((ID3D11Resource**)&Texture);
-
-        D3D11_TEXTURE2D_DESC TexDesc;
-        Texture->GetDesc(&TexDesc);
-
-        Texture->Release();
+        RenderContext* context = RenderContext::GetContext(frameBuffer);
+        context->Render();
     }
     DX11WeaverBase_weave(object, width, height);
 }
