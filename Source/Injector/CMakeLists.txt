@@ -16,3 +16,5 @@ target_include_directories(Injector PUBLIC
 )
 
 set_target_properties(Injector PROPERTIES FOLDER "SrIntercept")
+
+add_dependencies(Injector Intercept)
