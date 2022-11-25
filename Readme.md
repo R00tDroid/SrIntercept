@@ -2,6 +2,9 @@
 
 A framebuffer interceptor for Simulated Reality applications.
 
+[![CodeFactor](https://www.codefactor.io/repository/github/r00tdroid/srintercept/badge)](https://www.codefactor.io/repository/github/r00tdroid/srintercept)
+[![Build](https://github.com/R00tDroid/SrIntercept/actions/workflows/build.yml/badge.svg)](https://github.com/R00tDroid/SrIntercept/actions/workflows/build.yml)
+
 ---
 
 ## How to use
