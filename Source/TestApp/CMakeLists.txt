@@ -19,3 +19,5 @@ target_link_libraries(TestApp PRIVATE
     srDirectX::srDirectX
     d3d11
 )
+
+set_target_properties(TestApp PROPERTIES FOLDER "Tests")

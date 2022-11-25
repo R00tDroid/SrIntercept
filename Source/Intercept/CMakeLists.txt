@@ -23,6 +23,8 @@ target_include_directories(ImGui PUBLIC
     ${imgui_SOURCE_DIR}
 )
 
+set_target_properties(ImGui PROPERTIES FOLDER "Dependencies")
+
 file(GLOB_RECURSE SoftcamSource
     ${softcam_SOURCE_DIR}/src/*.cpp
     ${softcam_SOURCE_DIR}/src/*.h
@@ -43,6 +45,8 @@ target_link_libraries(Softcam PUBLIC
     winmm.lib
 )
 
+set_target_properties(Softcam PROPERTIES FOLDER "Dependencies")
+
 add_library(Intercept SHARED
     ${SourceFiles}
 )
@@ -57,3 +61,5 @@ target_include_directories(Intercept PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/Source
     ${detours_SOURCE_DIR}/src
 )
+
+set_target_properties(Intercept PROPERTIES FOLDER "SrIntercept")
