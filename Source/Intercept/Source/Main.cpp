@@ -12,13 +12,18 @@ DX11WeaverBase_getFrameBuffer_t DX11WeaverBase_getFrameBuffer;
 
 __declspec(dllexport) void __fastcall Override_DX11WeaverBase_weave(void* object, unsigned int width, unsigned int height)
 {
+    RenderContext* context = nullptr;
     ID3D11RenderTargetView* frameBuffer = DX11WeaverBase_getFrameBuffer(object);
     if (frameBuffer != nullptr)
     {
-        RenderContext* context = RenderContext::GetContext(frameBuffer);
-        context->Render();
+        context = RenderContext::GetContext(frameBuffer);
+        context->PreWeave();
     }
     DX11WeaverBase_weave(object, width, height);
+    if (context != nullptr)
+    {
+        context->PostWeave(width, height);
+    }
 }
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID) 

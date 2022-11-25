@@ -17,46 +17,42 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
     return newContext;
 }
 
-void RenderContext::Render()
+void RenderContext::PreWeave()
 {
-    ID3D11RenderTargetView* restoreView = nullptr;
-    context->OMGetRenderTargets(1, &restoreView, nullptr);
-    context->OMSetRenderTargets(1, &targetView, nullptr);
+}
+
+void RenderContext::PostWeave(unsigned width, unsigned height)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(float(width), float(height));
 
     ImGui_ImplDX11_NewFrame();
     ImGui::NewFrame();
 
+    ImGui::SetNextWindowSize(ImVec2(300, 250));
     if (ImGui::Begin("Sr Intercept"))
     {
         ImGui::Text("0x%x", targetView);
+        ImGui::Image(targetTextureSRV, ImVec2(280, 190));
         ImGui::End();
     }
 
     ImGui::Render();
 
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-    if (restoreView != nullptr) 
-    {
-        context->OMSetRenderTargets(1, &restoreView, nullptr);
-        restoreView->Release();
-    }
 }
 
 RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(inTargetView)
 {
-    ID3D11Texture2D* Texture = nullptr;
-    targetView->GetResource(reinterpret_cast<ID3D11Resource**>(&Texture));
+    targetView->GetResource(reinterpret_cast<ID3D11Resource**>(&targetTexture));
 
-    Texture->GetDesc(&targetDesc);
+    targetTexture->GetDesc(&targetDesc);
 
-    Texture->GetDevice(&device);
+    targetTexture->GetDevice(&device);
     device->GetImmediateContext(&context);
 
-    Texture->Release();
+    device->CreateShaderResourceView(targetTexture, nullptr, &targetTextureSRV);
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(device, context);
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2(float(targetDesc.Width / 2), float(targetDesc.Height));
 }

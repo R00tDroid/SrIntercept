@@ -7,7 +7,8 @@ class RenderContext
 public:
     static RenderContext* GetContext(ID3D11RenderTargetView* targetView);
 
-    void Render();
+    void PreWeave();
+    void PostWeave(unsigned int width, unsigned int height);
 
 private:
     static std::map<ID3D11RenderTargetView*, RenderContext*> Instances;
@@ -16,5 +17,7 @@ private:
     ID3D11Device* device = nullptr;
     ID3D11DeviceContext* context = nullptr;
     ID3D11RenderTargetView* targetView = nullptr;
+    ID3D11Texture2D* targetTexture = nullptr;
+    ID3D11ShaderResourceView* targetTextureSRV = nullptr;
     D3D11_TEXTURE2D_DESC targetDesc;
 };
