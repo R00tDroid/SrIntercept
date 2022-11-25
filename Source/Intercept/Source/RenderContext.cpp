@@ -19,6 +19,10 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
 
 void RenderContext::PreWeave()
 {
+    if (virtualWebcam != nullptr)
+    {
+        scSendFrame(virtualWebcam, outputBitmap);
+    }
 }
 
 void RenderContext::PostWeave(unsigned width, unsigned height)
@@ -55,4 +59,8 @@ RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(device, context);
+
+    virtualWebcam = scCreateCamera(800, 300, 0);
+
+    outputBitmap = (unsigned char*)malloc(800 * 300 * 3);
 }

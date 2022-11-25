@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <map>
+#include <softcam.h>
 
 class RenderContext
 {
@@ -20,4 +21,7 @@ private:
     ID3D11Texture2D* targetTexture = nullptr;
     ID3D11ShaderResourceView* targetTextureSRV = nullptr;
     D3D11_TEXTURE2D_DESC targetDesc;
+
+    scCamera virtualWebcam = nullptr;
+    unsigned char* outputBitmap = nullptr;
 };
