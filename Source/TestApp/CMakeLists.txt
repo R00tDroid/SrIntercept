@@ -20,4 +20,11 @@ target_link_libraries(TestApp PRIVATE
     d3d11
 )
 
-set_target_properties(TestApp PROPERTIES FOLDER "Tests")
+set_target_properties(TestApp PROPERTIES 
+    FOLDER "Tests"
+    VS_DEBUGGER_COMMAND "$<TARGET_FILE:Injector>"
+    VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:TestApp>"
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Injector>"
+)
+
+add_dependencies(TestApp Injector)
