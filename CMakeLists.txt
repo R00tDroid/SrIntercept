@@ -3,6 +3,8 @@ project(SrIntercept VERSION 0.0.1)
 
 option(BUILD_TESTAPP "" ON)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if (MSVC)
     add_compile_options(/W4 /WX)
 else()
@@ -31,6 +33,7 @@ set(DetoursSource
 add_library(Detours STATIC
     ${DetoursSource}
 )
+set_target_properties(Detours PROPERTIES FOLDER "Dependencies")
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Intercept)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Injector)

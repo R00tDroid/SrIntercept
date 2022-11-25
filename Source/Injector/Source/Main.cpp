@@ -1,7 +1,7 @@
 #include <windows.h>
 #include "detours.h"
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR Command, int)
 {
     STARTUPINFOA startupInfo;
     PROCESS_INFORMATION processInfo;
@@ -12,7 +12,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
     startupInfo.wShowWindow = SW_SHOW;
     ZeroMemory(&processInfo, sizeof(processInfo));
 
-    if (DetourCreateProcessWithDllExA("TestApp.exe", nullptr, nullptr, nullptr, false, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, nullptr, nullptr, &startupInfo, &processInfo, "Intercept.dll", nullptr))
+    if (DetourCreateProcessWithDllExA(Command, nullptr, nullptr, nullptr, false, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, nullptr, nullptr, &startupInfo, &processInfo, "Intercept.dll", nullptr))
     {
         //TODO Log success
     }
