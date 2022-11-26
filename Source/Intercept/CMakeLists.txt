@@ -63,3 +63,5 @@ target_include_directories(Intercept PUBLIC
 )
 
 set_target_properties(Intercept PROPERTIES FOLDER "SrIntercept")
+
+set_target_properties(Intercept PROPERTIES OUTPUT_NAME "SrIntercept")
