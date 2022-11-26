@@ -36,7 +36,7 @@ add_library(Detours STATIC
 set_target_properties(Detours PROPERTIES FOLDER "Dependencies")
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Intercept)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Injector)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Manager)
 
 if (BUILD_TESTAPP)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/TestApp)
