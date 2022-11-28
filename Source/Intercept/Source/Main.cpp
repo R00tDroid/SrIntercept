@@ -1,8 +1,11 @@
 #include <d3d11.h>
 #include <windows.h>
 #include <detours.h>
+#include <Log.hpp>
 #include "HookUtils.hpp"
 #include "RenderContext.hpp"
+
+Logger logger;
 
 typedef void(__thiscall* DX11WeaverBase_weave_t)(void* object, unsigned int width, unsigned int height);
 DX11WeaverBase_weave_t DX11WeaverBase_weave;
@@ -32,6 +35,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
     { 
         case DLL_PROCESS_ATTACH:
         {
+            logger.Log("Process attached");
+
             DetourRestoreAfterWith();
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
@@ -39,18 +44,28 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             FunctionPointer weave = FindFunction("SimulatedRealityDirectX.dll", "?weave@DX11WeaverBase@SR@@QEAAXII@Z");
             if (weave == nullptr)
             {
+                logger.Log("Failed to hook SR::DX11WeaverBase::weave");
                 MessageBoxA(nullptr, "Failed to hook SR::DX11WeaverBase::weave", "", MB_OK + MB_ICONERROR);
                 exit(-1);
+            }
+            else
+            {
+                logger.Log("SR::DX11WeaverBase::weave: 0x%x", weave);
             }
 
             FunctionPointer getFrameBuffer = FindFunction("SimulatedRealityDirectX.dll", "?getFrameBuffer@DX11WeaverBase@SR@@QEAAPEAUID3D11RenderTargetView@@XZ");
             if (getFrameBuffer == nullptr)
             {
+                logger.Log("Failed to hook SR::DX11WeaverBase::getFrameBuffer");
                 MessageBoxA(nullptr, "Failed to hook SR::DX11WeaverBase::getFrameBuffer", "", MB_OK + MB_ICONERROR);
                 exit(-1);
             }
-            DX11WeaverBase_getFrameBuffer = static_cast<DX11WeaverBase_getFrameBuffer_t>(getFrameBuffer);
+            else
+            {
+                logger.Log("SR::DX11WeaverBase::getFrameBuffer: 0x%x", getFrameBuffer);
+            }
 
+            DX11WeaverBase_getFrameBuffer = static_cast<DX11WeaverBase_getFrameBuffer_t>(getFrameBuffer);
             AttachFunction<DX11WeaverBase_weave_t>(weave, DX11WeaverBase_weave, Override_DX11WeaverBase_weave);
             DetourTransactionCommit();
 
@@ -68,6 +83,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
 
         case DLL_PROCESS_DETACH:
         {
+            logger.Log("Process detach");
+
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
             // Detach overrides

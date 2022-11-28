@@ -55,6 +55,7 @@ target_link_libraries(Intercept
     Detours
     ImGui
     Softcam
+    Shared
 )
 
 target_include_directories(Intercept PUBLIC
