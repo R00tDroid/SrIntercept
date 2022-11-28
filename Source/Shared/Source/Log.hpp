@@ -5,6 +5,7 @@
 class ILogSink
 {
 public:
+    virtual ~ILogSink() = default;
     virtual void Log(std::string message) = 0;
 };
 
@@ -20,10 +21,10 @@ public:
     T* AddSink()
     {
         T* newSink = new T();
-        sinks.push_back(newSink);
+        sinks.push_back((ILogSink*)newSink);
         return newSink;
     }
 
 private:
-    std::vector< ILogSink*> sinks;
+    std::vector<ILogSink*> sinks;
 };

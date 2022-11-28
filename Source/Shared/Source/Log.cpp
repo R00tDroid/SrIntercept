@@ -1,12 +1,39 @@
 #include "Log.hpp"
 #include <cstdarg>
+#include <iostream>
+#include <Windows.h>
+
+class CoutSink : ILogSink
+{
+public:
+    void Log(std::string message) override
+    {
+        std::cout << message.c_str() << std::endl;
+    }
+};
+
+class DebugOutSink : ILogSink
+{
+public:
+    void Log(std::string message) override
+    {
+        OutputDebugStringA((message + '\n').c_str());
+    }
+};
 
 Logger::Logger()
 {
+    AddSink<CoutSink>();
+    AddSink<DebugOutSink>();
 }
 
 Logger::~Logger()
 {
+    for (ILogSink* sink : sinks)
+    {
+        delete sink;
+    }
+    sinks.clear();
 }
 
 void Logger::Log(const char* format, ...)
