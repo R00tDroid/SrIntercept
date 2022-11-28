@@ -21,6 +21,7 @@ endforeach()
 include(CMake/get_cpm.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/CMake/Dependencies.cmake)
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Shared)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Intercept)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Source/Manager)
 

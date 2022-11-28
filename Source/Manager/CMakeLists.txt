@@ -8,6 +8,7 @@ add_executable(Manager WIN32
 
 target_link_libraries(Manager
     Detours
+    Shared
 )
 
 target_include_directories(Manager PUBLIC

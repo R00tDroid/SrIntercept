@@ -20,11 +20,15 @@ std::wstring Convert(std::string string)
 
 SrInterceptManager::SrInterceptManager()
 {
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(GetModuleHandleA(nullptr), exePath, MAX_PATH);
-    binaryDirectory = std::filesystem::path(exePath).parent_path();
+    char exePathString[MAX_PATH];
+    GetModuleFileNameA(GetModuleHandleA(nullptr), exePathString, MAX_PATH);
+    std::filesystem::path exePath(exePathString);
+    binaryDirectory = exePath.parent_path();
 
     dllPath = binaryDirectory / "SrIntercept.dll";
+
+    logger.Log("SrIntercept manager: %s", exePath.string().c_str());
+    logger.Log("SrIntercept interceptor: %s", dllPath.string().c_str());
 
     wchar_t* commandLine = GetCommandLineW();
     int argc = 0;
@@ -34,6 +38,7 @@ SrInterceptManager::SrInterceptManager()
     {
         for (int i = 1; i < argc; i++)
         {
+            logger.Log("Injecting from commandline argument");
             std::string arg = Convert(std::wstring(args[i]));
             std::filesystem::path executable(arg);
             if (std::filesystem::exists(executable))
@@ -42,7 +47,7 @@ SrInterceptManager::SrInterceptManager()
             }
             else
             {
-                //TODO Report and log error
+                logger.Log("Could not find injection target: %s", executable.string().c_str());
             }
         }
     }
@@ -61,6 +66,8 @@ void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)
 {
     //TODO Run on a separate thread
 
+    logger.Log("Injecting into: %s", executable.string().c_str());
+
     STARTUPINFOA startupInfo;
     PROCESS_INFORMATION processInfo;
 
@@ -72,12 +79,11 @@ void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)
 
     if (DetourCreateProcessWithDllExA(executable.string().c_str(), nullptr, nullptr, nullptr, false, CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED, nullptr, nullptr, &startupInfo, &processInfo, dllPath.string().c_str(), nullptr))
     {
-        //TODO Log success
+        logger.Log("Injection successful");
     }
     else
     {
-        //TODO Log failure
-        MessageBoxA(nullptr, "Failed to inject", "", MB_OK + MB_ICONERROR);
+        logger.Log("Failed to inject");
     }
 
     ResumeThread(processInfo.hThread);
@@ -86,4 +92,6 @@ void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)
 
     CloseHandle(&startupInfo);
     CloseHandle(&processInfo);
+
+    logger.Log("Injection target has stopped");
 }
