@@ -51,10 +51,17 @@ SrInterceptManager::SrInterceptManager()
             }
         }
     }
+
+    outputCamera = scCreateCamera(1920, 1080, 0);
 }
 
 bool SrInterceptManager::Update()
 {
+    if (outputCamera != nullptr)
+    {
+        scSendFrame(outputCamera, nullptr);
+    }
+
     return true;
 }
 
@@ -94,4 +101,30 @@ void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)
     CloseHandle(&processInfo);
 
     logger.Log("Injection target has stopped");
+}
+
+void SrInterceptManager::InstallWebcam()
+{
+    HMODULE softcamModule = GetModuleHandleA("softcam.dll");
+    auto DllRegisterServer = GetProcAddress(softcamModule, "DllRegisterServer");
+    HRESULT result = DllRegisterServer();
+    if (FAILED(result))
+    {
+        logger.Log("Failed to call DllRegisterServer");
+        MessageBoxA(nullptr, "Failed to call DllRegisterServer", "", MB_OK + MB_ICONERROR);
+        exit(-1);
+    }
+}
+
+void SrInterceptManager::UninstallWebcam()
+{
+    HMODULE softcamModule = GetModuleHandleA("softcam.dll");
+    auto DllUnregisterServer = GetProcAddress(softcamModule, "DllUnregisterServer");
+    HRESULT result = DllUnregisterServer();
+    if (FAILED(result))
+    {
+        logger.Log("Failed to call DllUnregisterServer");
+        MessageBoxA(nullptr, "Failed to call DllUnregisterServer", "", MB_OK + MB_ICONERROR);
+        exit(-1);
+    }
 }

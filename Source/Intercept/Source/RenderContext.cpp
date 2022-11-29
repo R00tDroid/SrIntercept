@@ -20,24 +20,6 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
 void RenderContext::PreWeave()
 {
     context->CopyResource(stagingTexture, targetTexture);
-
-    D3D11_MAPPED_SUBRESOURCE mapDesc;
-    context->Map(stagingTexture, 0, D3D11_MAP_READ, 0, &mapDesc);
-
-    for (int y = 0; y < 300; y++)
-    {
-        for (int x = 0; x < 800; x++)
-        {
-            memcpy(&outputBitmap[(y * 800 + x) * 3], &static_cast<unsigned char*>(mapDesc.pData)[(y * 800 + x) * 4], 3);
-        }
-    }
-
-    context->Unmap(stagingTexture, 0);
-
-    if (virtualWebcam != nullptr)
-    {
-        scSendFrame(virtualWebcam, outputBitmap);
-    }
 }
 
 void RenderContext::PostWeave(unsigned width, unsigned height)
@@ -74,10 +56,6 @@ RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(device, context);
-
-    virtualWebcam = scCreateCamera(800, 300, 0);
-
-    outputBitmap = (unsigned char*)malloc(800 * 300 * 3);
 
     D3D11_TEXTURE2D_DESC stagingDesc = targetDesc;
     stagingDesc.BindFlags = 0;

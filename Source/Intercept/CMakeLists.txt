@@ -9,7 +9,6 @@ add_library(Intercept SHARED
 target_link_libraries(Intercept
     Detours
     ImGui
-    Softcam
     Shared
 )
 

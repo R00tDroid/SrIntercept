@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <Log.hpp>
+#include <softcam.h>
 
 class SrInterceptManager
 {
@@ -13,7 +14,11 @@ public:
 
 private:
     void StartDynamicInjection(std::filesystem::path executable);
+    void InstallWebcam();
+    void UninstallWebcam();
 
     std::filesystem::path binaryDirectory;
     std::filesystem::path dllPath;
+
+    scCamera outputCamera = nullptr;
 };

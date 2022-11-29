@@ -69,15 +69,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             AttachFunction<DX11WeaverBase_weave_t>(weave, DX11WeaverBase_weave, Override_DX11WeaverBase_weave);
             DetourTransactionCommit();
 
-            HMODULE softcamModule = GetModuleHandleA("softcam.dll");
-            auto DllRegisterServer = GetProcAddress(softcamModule, "DllRegisterServer");
-            HRESULT result = DllRegisterServer();
-            if (FAILED(result))
-            {
-                MessageBoxA(nullptr, "Failed to call DllRegisterServer", "", MB_OK + MB_ICONERROR);
-                exit(-1);
-            }
-
             break;
         }
 
