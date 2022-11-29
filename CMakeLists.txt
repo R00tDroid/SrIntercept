@@ -18,7 +18,7 @@ foreach(ConfigName ${CMAKE_CONFIGURATION_TYPES})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${ConfigName} "${CMAKE_CURRENT_LIST_DIR}/Bin" CACHE PATH "" FORCE)
 endforeach()
 
-include(CMake/CPM.cmake)
+include(CMake/get_cpm.cmake)
 
 CPMAddPackage("gh:microsoft/detours#v4.0.1")
 
