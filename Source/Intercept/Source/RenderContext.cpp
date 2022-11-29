@@ -1,6 +1,7 @@
 #include "RenderContext.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_dx11.h"
+#include "InterceptLog.hpp"
 
 std::map<ID3D11RenderTargetView*, RenderContext*> RenderContext::Instances;
 
@@ -19,7 +20,12 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
 
 void RenderContext::PreWeave()
 {
-    context->CopyResource(stagingTexture, targetTexture);
+    UpdateSharedTexture();
+
+    if (sharedTexture != nullptr && sharedTextureLock != nullptr) 
+    {
+        context->CopyResource(sharedTexture, targetTexture);
+    }
 }
 
 void RenderContext::PostWeave(unsigned width, unsigned height)
@@ -56,10 +62,30 @@ RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(device, context);
+}
 
-    D3D11_TEXTURE2D_DESC stagingDesc = targetDesc;
-    stagingDesc.BindFlags = 0;
-    stagingDesc.Usage = D3D11_USAGE_STAGING;
-    stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-    device->CreateTexture2D(&stagingDesc, nullptr, &stagingTexture);
+void RenderContext::UpdateSharedTexture()
+{
+    if (sharedTextureHandle == nullptr || sharedTexture != nullptr) return;
+
+    ID3D11Device1* deviceInterface;
+    device->QueryInterface(IID_PPV_ARGS(&deviceInterface));
+    if (deviceInterface == nullptr)
+    {
+        return;
+    }
+
+    if (FAILED(deviceInterface->OpenSharedResource1(sharedTextureHandle, IID_PPV_ARGS(&sharedTexture))))
+    {
+        logger.Log("Failed to create copy of shared texture");
+        return;
+    }
+
+    if (FAILED(sharedTexture->QueryInterface(IID_PPV_ARGS(&sharedTextureLock))))
+    {
+        logger.Log("Failed to get mutex of sharing texture");
+        return;
+    }
+
+    deviceInterface->Release();
 }

@@ -1,7 +1,7 @@
 #include <d3d11.h>
 #include <windows.h>
 #include <detours.h>
-#include <Log.hpp>
+#include "InterceptLog.hpp"
 #include "HookUtils.hpp"
 #include "RenderContext.hpp"
 
