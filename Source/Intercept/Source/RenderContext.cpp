@@ -24,7 +24,9 @@ void RenderContext::PreWeave()
 
     if (sharedTexture != nullptr && sharedTextureLock != nullptr) 
     {
+        sharedTextureLock->AcquireSync(0, 100);
         context->CopyResource(sharedTexture, targetTexture);
+        sharedTextureLock->ReleaseSync(0);
     }
 }
 
