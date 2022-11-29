@@ -9,7 +9,7 @@ A framebuffer interceptor for Simulated Reality applications.
 
 ## How to use
 1. Obtain a copy of the SR Interceptor binaries
-2. Locate the executable of a Simulated rEality application
+2. Locate the executable of a Simulated Reality application
 3. `Injector.exe [Location of SR executable]`
 
 ## How to build
