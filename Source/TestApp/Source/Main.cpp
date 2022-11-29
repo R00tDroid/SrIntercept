@@ -23,6 +23,10 @@ unsigned int renderHeight = 600;
 
 ID3D11Buffer* vertexBuffer = nullptr;
 
+typedef std::chrono::system_clock clock_type;
+clock_type::time_point lastUpdate;
+float deltaTime = 0;
+
 struct ConstantBuffer
 {
     DirectX::XMMATRIX transform, projection;
@@ -240,7 +244,7 @@ void RenderFrame()
     d3dContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
     float cubeSize = 10;
-    r += 0.01f;
+    r += 90.0f * deltaTime;
 
     DirectX::XMVECTOR eyes[2] = 
     {
@@ -292,8 +296,15 @@ int main()
     if (!InitD3D()) return -1;
     if (!InitSR()) return -1;
 
+    lastUpdate = clock_type::now();
+
     while (true)
     {
+        clock_type::time_point now = clock_type::now();
+        clock_type::duration delta = now - lastUpdate;
+        deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count() / 1000.0f;
+        lastUpdate = now;
+
         UpdateWindow();
         RenderFrame();
     }
