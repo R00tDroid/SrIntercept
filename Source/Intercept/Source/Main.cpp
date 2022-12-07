@@ -1,3 +1,4 @@
+#include "ConnectionStream.hpp"
 #include <d3d11.h>
 #include <windows.h>
 #include <detours.h>
@@ -6,6 +7,8 @@
 #include "RenderContext.hpp"
 
 Logger logger;
+
+ClientConnectionStream* clientStream = nullptr;
 
 typedef void(__thiscall* DX11WeaverBase_weave_t)(void* object, unsigned int width, unsigned int height);
 DX11WeaverBase_weave_t DX11WeaverBase_weave;
@@ -68,6 +71,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             DX11WeaverBase_getFrameBuffer = static_cast<DX11WeaverBase_getFrameBuffer_t>(getFrameBuffer);
             AttachFunction<DX11WeaverBase_weave_t>(weave, DX11WeaverBase_weave, Override_DX11WeaverBase_weave);
             DetourTransactionCommit();
+
+            logger.Log("Connecting to SrIntercept...");
+            clientStream = new ClientConnectionStream("127.0.0.1", 5678);
 
             break;
         }

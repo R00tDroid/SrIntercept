@@ -1,6 +1,7 @@
 #include "App.hpp"
 #include <Windows.h>
 #include "detours.h"
+#include "Packets.hpp"
 
 std::string Convert(std::wstring string)
 {
@@ -34,6 +35,8 @@ SrInterceptManager::SrInterceptManager()
     int argc = 0;
     wchar_t** args = CommandLineToArgvW(commandLine, &argc);
 
+    connection = new HostConnection("127.0.0.1", 5678);
+
     if (argc > 1)
     {
         for (int i = 1; i < argc; i++)
@@ -60,6 +63,15 @@ bool SrInterceptManager::Update()
     if (outputCamera != nullptr)
     {
         scSendFrame(outputCamera, nullptr);
+    }
+
+    std::vector<HostConnectionStream*> clientStreams = connection->GetStreams();
+    for (HostConnectionStream* client : clientStreams)
+    {
+        client->BeginWrite();
+        client->Write(PT_Test);
+        client->Write<float>(6.2f);
+        client->EndWrite();
     }
 
     return true;

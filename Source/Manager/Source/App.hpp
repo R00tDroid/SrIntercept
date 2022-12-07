@@ -1,4 +1,5 @@
 #pragma once
+#include "ConnectionStream.hpp"
 #include <filesystem>
 #include <Log.hpp>
 #include <softcam.h>
@@ -21,4 +22,6 @@ private:
     std::filesystem::path dllPath;
 
     scCamera outputCamera = nullptr;
+
+    HostConnection* connection = nullptr;
 };
