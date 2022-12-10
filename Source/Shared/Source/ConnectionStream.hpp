@@ -12,6 +12,7 @@ class HostConnectionStream;
 class IConnectionStream
 {
 public:
+    IConnectionStream(CSimpleSocket* socket);
     ~IConnectionStream();
 
     void BeginWrite();
@@ -47,12 +48,19 @@ public:
         return value;
     }
 
+    unsigned short Available();
+
 protected:
-    CSimpleSocket* socket = nullptr;
+    void ThreadFunction();
 
 private:
+    CSimpleSocket* socket = nullptr;
     std::mutex writeLock;
+
+    std::mutex incomingLock;
     std::vector<unsigned char> incomingData;
+
+    std::thread* thread = nullptr;
 };
 
 class HostConnection
@@ -81,5 +89,8 @@ public:
 class ClientConnectionStream : public IConnectionStream
 {
 public:
-    ClientConnectionStream(std::string address, unsigned short port);
+    static ClientConnectionStream* ConnectToHost(std::string address, unsigned short port);
+
+private:
+    ClientConnectionStream(CSimpleSocket* socket);
 };

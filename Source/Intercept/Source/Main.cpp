@@ -73,7 +73,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             DetourTransactionCommit();
 
             logger.Log("Connecting to SrIntercept...");
-            clientStream = new ClientConnectionStream("127.0.0.1", 5678);
+            clientStream = ClientConnectionStream::ConnectToHost("127.0.0.1", 5678);
 
             break;
         }

@@ -2,6 +2,11 @@
 #include <functional>
 #include <Log.hpp>
 
+IConnectionStream::IConnectionStream(CSimpleSocket* inSocket) : socket(inSocket)
+{
+    thread = new std::thread(&IConnectionStream::ThreadFunction, this);
+}
+
 IConnectionStream::~IConnectionStream()
 {
     if (socket != nullptr) 
@@ -30,9 +35,48 @@ void IConnectionStream::Write(void* buffer, unsigned elementSize, unsigned count
 void IConnectionStream::Read(void* buffer, unsigned elementSize, unsigned count)
 {
     unsigned int dataSize = elementSize * count;
-    while (incomingData.size() < dataSize) { }
+
+    incomingLock.lock();
+    while (incomingData.size() < dataSize)
+    {
+        // Release lock temporarily to allow thread to provide more data
+        incomingLock.unlock();
+        incomingLock.lock();
+    }
+
     memcpy(buffer, incomingData.data(), dataSize);
     incomingData.erase(incomingData.begin(), incomingData.begin() + dataSize);
+    incomingLock.unlock();
+}
+
+unsigned short IConnectionStream::Available()
+{
+    incomingLock.lock();
+    unsigned short size = incomingData.size();
+    incomingLock.unlock();
+    return size;
+}
+
+void IConnectionStream::ThreadFunction()
+{
+    while (true)
+    {
+        unsigned char byte;
+        int received = socket->Receive();
+
+        if (received == 0) break; // Client has disconnected
+        if (received == -1) continue; // No data
+        if (received < 0) break; // Error occurred
+
+        for (int i = 0; i < socket->GetBytesReceived(); i++)
+        {
+            incomingLock.lock();
+            incomingData.push_back(socket->GetData()[i]);
+            incomingLock.unlock();
+        }
+    }
+
+    logger.Log("TCP incoming thread has stopped");
 }
 
 HostConnection::HostConnection(std::string address, unsigned short port)
@@ -75,25 +119,30 @@ std::vector<HostConnectionStream*> HostConnection::GetStreams()
     return copy;
 }
 
-HostConnectionStream::HostConnectionStream(CSimpleSocket* inSocket)
+HostConnectionStream::HostConnectionStream(CSimpleSocket* inSocket) : IConnectionStream(inSocket)
 {
-    socket = inSocket;
     logger.Log("TCP client connected");
 }
 
-ClientConnectionStream::ClientConnectionStream(std::string address, unsigned short port)
+ClientConnectionStream* ClientConnectionStream::ConnectToHost(std::string address, unsigned short port)
 {
     logger.Log("Connecting to TCP host: %s:%i", address.c_str(), port);
 
     CActiveSocket* clientSocket = new CActiveSocket();
-    socket = clientSocket;
     clientSocket->Initialize();
     if (clientSocket->Open(address.c_str(), port))
     {
-        logger.Log("Connected to TCP host");
+        return new ClientConnectionStream(clientSocket);
     }
     else
     {
+        delete clientSocket;
         logger.Log("Failed to connect to TCP host");
+        return nullptr;
     }
+}
+
+ClientConnectionStream::ClientConnectionStream(CSimpleSocket* socket) : IConnectionStream(socket)
+{
+    logger.Log("Connected to TCP host");
 }
