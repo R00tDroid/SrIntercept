@@ -25,8 +25,11 @@ public:
         return newSink;
     }
 
+    void SetPrefix(std::string prefix);
+
 private:
     std::vector<ILogSink*> sinks;
+    std::string prefix = "";
 };
 
 extern Logger logger;

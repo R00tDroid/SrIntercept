@@ -36,6 +36,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
     { 
         case DLL_PROCESS_ATTACH:
         {
+            logger.SetPrefix("[SRI Interceptor] ");
+
             logger.Log("Process attached");
 
             DetourRestoreAfterWith();

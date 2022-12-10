@@ -47,7 +47,7 @@ void Logger::Log(const char* format, ...)
     if (size <= 0) return;
     char* buffer = (char*)malloc(size);
     std::vsnprintf(buffer, size, format, args);
-    const std::string message(buffer);
+    const std::string message(prefix + buffer);
     free(buffer);
 
     va_end(args);
@@ -56,4 +56,9 @@ void Logger::Log(const char* format, ...)
     {
         sink->Log(message);
     }
+}
+
+void Logger::SetPrefix(std::string inPrefix)
+{
+    prefix = inPrefix;
 }

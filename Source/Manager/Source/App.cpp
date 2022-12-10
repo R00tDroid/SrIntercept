@@ -21,6 +21,8 @@ std::wstring Convert(std::string string)
 
 SrInterceptManager::SrInterceptManager()
 {
+    logger.SetPrefix("[SRI Manager] ");
+
     char exePathString[MAX_PATH];
     GetModuleFileNameA(GetModuleHandleA(nullptr), exePathString, MAX_PATH);
     std::filesystem::path exePath(exePathString);
@@ -107,12 +109,12 @@ void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)
 
     ResumeThread(processInfo.hThread);
 
-    WaitForSingleObject(processInfo.hProcess, INFINITE);
+    //WaitForSingleObject(processInfo.hProcess, INFINITE);
 
-    CloseHandle(&startupInfo);
-    CloseHandle(&processInfo);
+    //CloseHandle(&startupInfo);
+    //CloseHandle(&processInfo);
 
-    logger.Log("Injection target has stopped");
+    //logger.Log("Injection target has stopped");
 }
 
 void SrInterceptManager::InstallWebcam()
