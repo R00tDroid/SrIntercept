@@ -6,8 +6,6 @@
 #include "HookUtils.hpp"
 #include "RenderContext.hpp"
 
-Logger logger;
-
 ClientConnectionStream* clientStream = nullptr;
 
 typedef void(__thiscall* DX11WeaverBase_weave_t)(void* object, unsigned int width, unsigned int height);

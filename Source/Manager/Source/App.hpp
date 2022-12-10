@@ -11,8 +11,6 @@ public:
     bool Update();
     ~SrInterceptManager();
 
-    Logger logger;
-
 private:
     void StartDynamicInjection(std::filesystem::path executable);
     void InstallWebcam();

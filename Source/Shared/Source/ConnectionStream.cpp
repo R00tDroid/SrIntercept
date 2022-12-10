@@ -1,6 +1,6 @@
 #include "ConnectionStream.hpp"
-
 #include <functional>
+#include <Log.hpp>
 
 IConnectionStream::~IConnectionStream()
 {
@@ -39,7 +39,14 @@ HostConnection::HostConnection(std::string address, unsigned short port)
 {
     socket = new CPassiveSocket();
     socket->Initialize();
-    socket->Listen(address.c_str(), port);
+    if (socket->Listen(address.c_str(), port)) 
+    {
+        logger.Log("Listening for TCP clients: %s:%i", address.c_str(), port);
+    }
+    else
+    {
+        logger.Log("Failed to open TCP host: %s:%i", address.c_str(), port);
+    }
 
     thread = new std::thread(std::bind(&HostConnection::ThreadFunction, this));
 }
@@ -71,12 +78,22 @@ std::vector<HostConnectionStream*> HostConnection::GetStreams()
 HostConnectionStream::HostConnectionStream(CSimpleSocket* inSocket)
 {
     socket = inSocket;
+    logger.Log("TCP client connected");
 }
 
 ClientConnectionStream::ClientConnectionStream(std::string address, unsigned short port)
 {
+    logger.Log("Connecting to TCP host: %s:%i", address.c_str(), port);
+
     CActiveSocket* clientSocket = new CActiveSocket();
     socket = clientSocket;
     clientSocket->Initialize();
-    clientSocket->Open(address.c_str(), port);
+    if (clientSocket->Open(address.c_str(), port))
+    {
+        logger.Log("Connected to TCP host");
+    }
+    else
+    {
+        logger.Log("Failed to connect to TCP host");
+    }
 }

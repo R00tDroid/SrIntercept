@@ -3,6 +3,8 @@
 #include <iostream>
 #include <Windows.h>
 
+Logger logger;
+
 class CoutSink : ILogSink
 {
 public:

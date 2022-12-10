@@ -28,3 +28,5 @@ public:
 private:
     std::vector<ILogSink*> sinks;
 };
+
+extern Logger logger;
