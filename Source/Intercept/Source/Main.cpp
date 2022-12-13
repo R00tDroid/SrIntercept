@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <windows.h>
 #include <detours.h>
+#include "ClientMessaging.hpp"
 #include "InterceptLog.hpp"
 #include "HookUtils.hpp"
 #include "RenderContext.hpp"
@@ -72,8 +73,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
             AttachFunction<DX11WeaverBase_weave_t>(weave, DX11WeaverBase_weave, Override_DX11WeaverBase_weave);
             DetourTransactionCommit();
 
-            logger.Log("Connecting to SrIntercept...");
-            clientStream = ClientConnectionStream::ConnectToHost("127.0.0.1", 5678);
+            ClientMessaging::instance.Start();
 
             break;
         }
@@ -81,6 +81,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD Event, LPVOID)
         case DLL_PROCESS_DETACH:
         {
             logger.Log("Process detach");
+
+            ClientMessaging::instance.Stop();
 
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
