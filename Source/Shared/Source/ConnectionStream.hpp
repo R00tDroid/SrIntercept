@@ -23,7 +23,7 @@ public:
     template<class T>
     void Write(T* buffer, unsigned int count = 1)
     {
-        Write(&buffer, sizeof(T), count);
+        Write(buffer, sizeof(T), count);
     }
 
     template<class T>
@@ -37,7 +37,7 @@ public:
     template<class T>
     void Read(T* buffer, unsigned int count = 1)
     {
-        Read(&buffer, sizeof(T), count);
+        Read(buffer, sizeof(T), count);
     }
 
     template<class T>
