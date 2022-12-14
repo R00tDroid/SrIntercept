@@ -13,4 +13,5 @@ protected:
     virtual void OnStreamClosed() = 0;
 
     IConnectionStream* stream = nullptr;
+    bool wasPreviouslyActive = false;
 };
