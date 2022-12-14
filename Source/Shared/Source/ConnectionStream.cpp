@@ -63,9 +63,8 @@ void IConnectionStream::ThreadFunction()
     {
         int received = socket->Receive();
 
-        if (received == 0) break; // Client has disconnected
-        if (received == -1) continue; // No data
-        if (received < 0) break; // Error occurred
+        if (received == 0) continue; 
+        if (received < 0) break; // Client has disconnected
 
         for (int i = 0; i < socket->GetBytesReceived(); i++)
         {
