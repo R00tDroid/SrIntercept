@@ -61,7 +61,6 @@ void IConnectionStream::ThreadFunction()
 {
     while (true)
     {
-        unsigned char byte;
         int received = socket->Receive();
 
         if (received == 0) break; // Client has disconnected
@@ -107,6 +106,11 @@ void HostConnection::ThreadFunction()
             streamsLock.lock();
             streams.push_back(stream);
             streamsLock.unlock();
+
+            if (onConnectionOpened != nullptr)
+            {
+                onConnectionOpened(stream);
+            }
         }
     }
 }

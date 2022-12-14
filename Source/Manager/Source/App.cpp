@@ -38,6 +38,7 @@ SrInterceptManager::SrInterceptManager()
     wchar_t** args = CommandLineToArgvW(commandLine, &argc);
 
     connection = new HostConnection("127.0.0.1", 5678);
+    connection->onConnectionOpened = std::bind(&SrInterceptManager::OnClientConnected, this, std::placeholders::_1);
 
     if (argc > 1)
     {
@@ -65,15 +66,6 @@ bool SrInterceptManager::Update()
     if (outputCamera != nullptr)
     {
         scSendFrame(outputCamera, nullptr);
-    }
-
-    std::vector<HostConnectionStream*> clientStreams = connection->GetStreams();
-    for (HostConnectionStream* client : clientStreams)
-    {
-        client->BeginWrite();
-        client->Write(PT_Test);
-        client->Write<float>(6.2f);
-        client->EndWrite();
     }
 
     return true;
@@ -141,4 +133,10 @@ void SrInterceptManager::UninstallWebcam()
         MessageBoxA(nullptr, "Failed to call DllUnregisterServer", "", MB_OK + MB_ICONERROR);
         exit(-1);
     }
+}
+
+void SrInterceptManager::OnClientConnected(HostConnectionStream* stream)
+{
+    logger.Log("Client connected to manager");
+    clientConnections.push_back(new HostMessaging(stream));
 }

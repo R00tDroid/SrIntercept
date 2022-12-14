@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <Log.hpp>
 #include <softcam.h>
+#include "HostMessaging.hpp"
 
 class SrInterceptManager
 {
@@ -16,10 +17,14 @@ private:
     void InstallWebcam();
     void UninstallWebcam();
 
+    void OnClientConnected(HostConnectionStream* stream);
+
     std::filesystem::path binaryDirectory;
     std::filesystem::path dllPath;
 
     scCamera outputCamera = nullptr;
 
     HostConnection* connection = nullptr;
+
+    std::vector<HostMessaging*> clientConnections;
 };

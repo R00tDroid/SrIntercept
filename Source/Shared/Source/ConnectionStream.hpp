@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <WinSock2.h>
 #include <windows.h>
 #include <SimpleSocket.h>
@@ -71,6 +72,7 @@ public:
     void ThreadFunction();
 
     std::vector<HostConnectionStream*> GetStreams();
+    std::function<void(HostConnectionStream*)> onConnectionOpened = nullptr;
 
 private:
     CPassiveSocket* socket = nullptr;
