@@ -51,6 +51,8 @@ public:
 
     unsigned short Available();
 
+    bool IsConnectionActive();
+
 protected:
     void ThreadFunction();
 
@@ -61,6 +63,7 @@ private:
     std::mutex incomingLock;
     std::vector<unsigned char> incomingData;
 
+    std::mutex threadLock;
     std::thread* thread = nullptr;
 };
 

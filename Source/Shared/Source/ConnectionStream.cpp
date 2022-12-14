@@ -57,6 +57,14 @@ unsigned short IConnectionStream::Available()
     return size;
 }
 
+bool IConnectionStream::IsConnectionActive()
+{
+    threadLock.lock();
+    bool status = thread != nullptr;
+    threadLock.unlock();
+    return status;
+}
+
 void IConnectionStream::ThreadFunction()
 {
     while (true)
@@ -75,6 +83,10 @@ void IConnectionStream::ThreadFunction()
     }
 
     logger.Log("TCP incoming thread has stopped");
+
+    threadLock.lock();
+    thread = nullptr;
+    threadLock.unlock();
 }
 
 HostConnection::HostConnection(std::string address, unsigned short port)

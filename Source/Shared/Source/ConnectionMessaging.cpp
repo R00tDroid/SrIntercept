@@ -9,5 +9,12 @@ void IConnectionMessaging::Update()
             PacketHeader type = stream->Read<PacketHeader>();
             OnPacketReceived(type);
         }
+
+        if (!stream->IsConnectionActive())
+        {
+            OnStreamClosed();
+            delete stream;
+            stream = nullptr;
+        }
     }
 }
