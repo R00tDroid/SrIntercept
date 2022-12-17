@@ -31,9 +31,9 @@ void ClientMessaging::OnPacketReceived(PacketHeader packetType)
 {
     switch (packetType)
     {
-        case PT_Test:
+        case PT_ManagerInfo:
         {
-            float value = stream->Read<float>();
+            managerProcessId = stream->Read<DWORD>();
             break;
         }
     }

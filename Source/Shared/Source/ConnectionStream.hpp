@@ -7,6 +7,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include "Packets.hpp"
 
 class HostConnectionStream;
 
@@ -16,7 +17,7 @@ public:
     IConnectionStream(CSimpleSocket* socket);
     ~IConnectionStream();
 
-    void BeginWrite();
+    void BeginWrite(PacketHeader packetId);
     void EndWrite();
 
     void Write(void* buffer, unsigned int elementSize, unsigned int count);

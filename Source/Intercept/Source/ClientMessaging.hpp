@@ -9,6 +9,8 @@ public:
     void Start();
     void Stop();
 
+    DWORD managerProcessId = 0;
+
 protected:
     void OnPacketReceived(PacketHeader packetType) override;
     void OnStreamOpened() override;

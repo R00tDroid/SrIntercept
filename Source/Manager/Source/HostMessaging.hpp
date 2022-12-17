@@ -7,6 +7,8 @@ public:
     HostMessaging(IConnectionStream* stream);
     ~HostMessaging();
 
+    void SendManagerInfo();
+
 protected:
     void OnPacketReceived(PacketHeader packetType) override;
     void OnStreamClosed() override;

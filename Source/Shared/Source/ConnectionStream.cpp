@@ -17,9 +17,10 @@ IConnectionStream::~IConnectionStream()
     }
 }
 
-void IConnectionStream::BeginWrite()
+void IConnectionStream::BeginWrite(PacketHeader packetId)
 {
     writeLock.lock();
+    Write(packetId);
 }
 
 void IConnectionStream::EndWrite()

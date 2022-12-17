@@ -8,6 +8,8 @@ HostMessaging::HostMessaging(IConnectionStream* inStream)
 
     shouldThreadStop = false;
     thread = new std::thread(&HostMessaging::ThreadFunction, this);
+
+    SendManagerInfo();
 }
 
 HostMessaging::~HostMessaging()
@@ -26,6 +28,13 @@ HostMessaging::~HostMessaging()
         delete stream;
         stream = nullptr;
     }
+}
+
+void HostMessaging::SendManagerInfo()
+{
+    stream->BeginWrite(PT_ManagerInfo);
+    stream->Write<DWORD>(GetCurrentProcessId());
+    stream->EndWrite();
 }
 
 void HostMessaging::OnPacketReceived(PacketHeader packetType)
