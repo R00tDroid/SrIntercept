@@ -20,9 +20,7 @@ RenderContext* RenderContext::GetContext(ID3D11RenderTargetView* targetView)
 
 void RenderContext::PreWeave()
 {
-    UpdateSharedTexture();
-
-    if (sharedTexture != nullptr && sharedTextureLock != nullptr) 
+    if (sharedTexture != nullptr && sharedTextureLock != nullptr)
     {
         sharedTextureLock->AcquireSync(0, 100);
         context->CopyResource(sharedTexture, targetTexture);
@@ -64,30 +62,23 @@ RenderContext::RenderContext(ID3D11RenderTargetView* inTargetView) : targetView(
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(device, context);
-}
 
-void RenderContext::UpdateSharedTexture()
-{
-    if (sharedTextureHandle == nullptr || sharedTexture != nullptr) return;
+    D3D11_TEXTURE2D_DESC sharedTexDesc = targetDesc;
+    sharedTexDesc.BindFlags = 0;
+    sharedTexDesc.CPUAccessFlags = 0;
+    sharedTexDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
 
-    ID3D11Device1* deviceInterface;
-    device->QueryInterface(IID_PPV_ARGS(&deviceInterface));
-    if (deviceInterface == nullptr)
+    if (FAILED(device->CreateTexture2D(&sharedTexDesc, nullptr, &sharedTexture)))
     {
-        return;
+        logger.Log("Failed to create shared texture");
     }
-
-    if (FAILED(deviceInterface->OpenSharedResource1(sharedTextureHandle, IID_PPV_ARGS(&sharedTexture))))
+    else
     {
-        logger.Log("Failed to create copy of shared texture");
-        return;
-    }
+        sharedTexture->QueryInterface(IID_PPV_ARGS(&sharedTextureLock));
 
-    if (FAILED(sharedTexture->QueryInterface(IID_PPV_ARGS(&sharedTextureLock))))
-    {
-        logger.Log("Failed to get mutex of sharing texture");
-        return;
+        IDXGIResource1* sharedResource = nullptr;
+        sharedTexture->QueryInterface(IID_PPV_ARGS(&sharedResource));
+        sharedResource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, nullptr, &sharedTextureHandle);
+        sharedResource->Release();
     }
-
-    deviceInterface->Release();
 }

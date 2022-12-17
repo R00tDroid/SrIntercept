@@ -14,8 +14,6 @@ private:
     static std::map<ID3D11RenderTargetView*, RenderContext*> Instances;
     RenderContext(ID3D11RenderTargetView* targetView);
 
-    void UpdateSharedTexture();
-
     ID3D11Device* device = nullptr;
     ID3D11DeviceContext* context = nullptr;
     ID3D11RenderTargetView* targetView = nullptr;
