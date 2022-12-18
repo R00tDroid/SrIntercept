@@ -1,0 +1,35 @@
+#pragma once
+#include <string>
+#include <vector>
+
+class ILogSink
+{
+public:
+    virtual ~ILogSink() = default;
+    virtual void Log(std::string message) = 0;
+};
+
+class Logger
+{
+public:
+    Logger();
+    ~Logger();
+
+    void Log(const char* format, ...);
+
+    template<class T>
+    T* AddSink()
+    {
+        T* newSink = new T();
+        sinks.push_back((ILogSink*)newSink);
+        return newSink;
+    }
+
+    void SetPrefix(std::string prefix);
+
+private:
+    std::vector<ILogSink*> sinks;
+    std::string prefix = "";
+};
+
+extern Logger logger;

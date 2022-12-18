@@ -22,9 +22,9 @@ target_link_libraries(TestApp PRIVATE
 
 set_target_properties(TestApp PROPERTIES 
     FOLDER "Tests"
-    VS_DEBUGGER_COMMAND "$<TARGET_FILE:Injector>"
+    VS_DEBUGGER_COMMAND "$<TARGET_FILE:Manager>"
     VS_DEBUGGER_COMMAND_ARGUMENTS "$<TARGET_FILE:TestApp>"
-    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Injector>"
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Manager>"
 )
 
-add_dependencies(TestApp Injector)
+add_dependencies(TestApp Manager)
