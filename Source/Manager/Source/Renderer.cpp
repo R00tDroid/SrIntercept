@@ -94,6 +94,11 @@ void Renderer::Destroy()
         window = nullptr;
     }
 
+    d3d_release(webcamOutput);
+    d3d_release(conversionTargetView);
+    d3d_release(conversionTargetResource);
+    d3d_release(conversionTarget);
+
     d3d_release(conversionConstants)
     d3d_release(conversionGeometry);
     d3d_release(conversionVS);
@@ -192,6 +197,24 @@ bool Renderer::InitConverter()
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     d3dDevice->CreateBuffer(&desc, nullptr, &conversionConstants);
+
+    D3D11_TEXTURE2D_DESC conversionTargetDesc = { 0 };
+    conversionTargetDesc.Width = conversionResolution.x;
+    conversionTargetDesc.Height = conversionResolution.y;
+    conversionTargetDesc.MipLevels = 1;
+    conversionTargetDesc.ArraySize = 1;
+    conversionTargetDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    conversionTargetDesc.SampleDesc.Count = 1;
+    conversionTargetDesc.Usage = D3D11_USAGE_DEFAULT;
+
+    conversionTargetDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    d3dDevice->CreateTexture2D(&conversionTargetDesc, nullptr, &conversionTarget);
+    d3dDevice->CreateRenderTargetView(conversionTarget, nullptr, &conversionTargetView);
+    d3dDevice->CreateShaderResourceView(conversionTarget, nullptr, &conversionTargetResource);
+
+    conversionTargetDesc.BindFlags = 0;
+    conversionTargetDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    d3dDevice->CreateTexture2D(&conversionTargetDesc, nullptr, &webcamOutput);
 
     return true;
 }

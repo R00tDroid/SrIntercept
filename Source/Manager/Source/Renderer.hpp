@@ -52,4 +52,12 @@ private:
     ID3D11InputLayout* conversionIL = nullptr;
     ID3D11Buffer* conversionGeometry = nullptr;
     ID3D11Buffer* conversionConstants = nullptr;
+
+    DirectX::XMINT2 conversionResolution = { 3840, 1080 };
+
+    ID3D11Texture2D* conversionTarget = nullptr;
+    ID3D11ShaderResourceView* conversionTargetResource = nullptr;
+    ID3D11RenderTargetView* conversionTargetView = nullptr;
+
+    ID3D11Texture2D* webcamOutput = nullptr;
 };
