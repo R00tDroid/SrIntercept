@@ -29,6 +29,7 @@ public:
 private:
     bool InitWindow();
     bool InitD3D();
+    bool InitConverter();
     void UpdateWindow();
 
     void RenderUI();
@@ -36,4 +37,8 @@ private:
     DirectX::XMINT2 windowSize = { 800, 600 };
 
     int selectedRenderContext = -1;
+
+    ID3D11VertexShader* conversionVS = nullptr;
+    ID3D11PixelShader* conversionPS = nullptr;
+    ID3D11InputLayout* conversionIL = nullptr;
 };

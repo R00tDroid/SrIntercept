@@ -1,3 +1,4 @@
+#include "App.hpp"
 #include "Renderer.hpp"
 #include <imgui.h>
 #include <backends/imgui_impl_dx11.h>
@@ -18,6 +19,7 @@ bool Renderer::Init()
 {
     if (!InitWindow()) return false;
     if (!InitD3D()) return false;
+    if (!InitConverter()) return false;
 
     ImGui::CreateContext();
     ImGui_ImplDX11_Init(d3dDevice, d3dContext);
@@ -56,6 +58,10 @@ void Renderer::Destroy()
         DestroyWindow(window);
         window = nullptr;
     }
+
+    d3d_release(conversionVS);
+    d3d_release(conversionPS);
+    d3d_release(conversionIL);
 
     d3d_release(backBufferView);
     d3d_release(dxgiSwapchain);
@@ -103,6 +109,25 @@ bool Renderer::InitD3D()
     ID3D11Texture2D* backBuffer;
     dxgiSwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
+
+    return true;
+}
+
+bool Renderer::InitConverter()
+{
+    cmrc::file fileVS = resourceFS->open("Source/Convert_vs.cso");
+    d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &conversionVS);
+
+    cmrc::file filePS = resourceFS->open("Source/Convert_ps.cso");
+    d3dDevice->CreatePixelShader(filePS.begin(), filePS.size(), nullptr, &conversionPS);
+
+    D3D11_INPUT_ELEMENT_DESC inputElements[] =
+    {
+        { "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+
+    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &conversionIL);
 
     return true;
 }
