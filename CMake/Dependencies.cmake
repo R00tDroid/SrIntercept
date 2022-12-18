@@ -83,3 +83,6 @@ target_link_libraries(Softcam PUBLIC
 )
 
 set_target_properties(Softcam PROPERTIES FOLDER "Dependencies")
+
+CPMAddPackage("gh:vector-of-bool/cmrc#2.0.1")
+include(${cmrc_SOURCE_DIR}/CMakeRC.cmake)
