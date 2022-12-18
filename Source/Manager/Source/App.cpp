@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "detours.h"
 #include "Packets.hpp"
+#include "Renderer.hpp"
 
 std::string Convert(std::wstring string)
 {
@@ -59,6 +60,8 @@ SrInterceptManager::SrInterceptManager()
     }
 
     outputCamera = scCreateCamera(1920, 1080, 0);
+
+    Renderer::instance.Init();
 }
 
 bool SrInterceptManager::Update()
@@ -68,11 +71,14 @@ bool SrInterceptManager::Update()
         scSendFrame(outputCamera, nullptr);
     }
 
+    Renderer::instance.Render();
+
     return true;
 }
 
 SrInterceptManager::~SrInterceptManager()
 {
+    Renderer::instance.Destroy();
 }
 
 void SrInterceptManager::StartDynamicInjection(std::filesystem::path executable)

@@ -11,6 +11,7 @@ target_link_libraries(Manager
     Shared
     Softcam
     ImGui
+    d3d11
 )
 
 target_include_directories(Manager PUBLIC
