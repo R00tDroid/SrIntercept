@@ -26,5 +26,7 @@ private:
     bool InitD3D();
     void UpdateWindow();
 
+    void RenderUI();
+
     DirectX::XMINT2 windowSize = { 800, 600 };
 };

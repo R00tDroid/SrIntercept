@@ -1,4 +1,7 @@
 #include "Renderer.hpp"
+#include <imgui.h>
+#include <backends/imgui_impl_dx11.h>
+#include <backends/imgui_impl_win32.h>
 
 Renderer Renderer::instance;
 
@@ -6,6 +9,10 @@ bool Renderer::Init()
 {
     if (!InitWindow()) return false;
     if (!InitD3D()) return false;
+
+    ImGui::CreateContext();
+    ImGui_ImplDX11_Init(d3dDevice, d3dContext);
+    ImGui_ImplWin32_Init(window);
 
     return true;
 }
@@ -19,11 +26,17 @@ void Renderer::Render()
     float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
     d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
 
+    RenderUI();
+
     dxgiSwapchain->Present(1, 0);
 }
 
 void Renderer::Destroy()
 {
+    ImGui_ImplWin32_Shutdown();
+    ImGui_ImplDX11_Shutdown();
+    ImGui::DestroyContext();
+
     if (window != nullptr)
     {
         DestroyWindow(window);
@@ -88,4 +101,24 @@ void Renderer::UpdateWindow()
         TranslateMessage(&message);
         DispatchMessageA(&message);
     }
+}
+
+void Renderer::RenderUI()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(float(windowSize.x), float(windowSize.y));
+
+    ImGui_ImplDX11_NewFrame();
+    ImGui::NewFrame();
+    ImGui_ImplWin32_NewFrame();
+
+    ImGui::SetNextWindowSize(ImVec2(300, 250));
+    if (ImGui::Begin("Sr Intercept"))
+    {
+        ImGui::End();
+    }
+
+    ImGui::Render();
+
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
