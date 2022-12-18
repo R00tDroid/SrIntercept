@@ -44,6 +44,9 @@ void Renderer::Render()
 
     if (selectedRenderContext != -1)
     {
+        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f, 1.0f };
+        d3dContext->RSSetViewports(1, &viewport);
+
         RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
 
         d3dContext->VSSetShader(conversionVS, nullptr, 0);
@@ -51,6 +54,13 @@ void Renderer::Render()
         d3dContext->IASetInputLayout(conversionIL);
 
         d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
+
+        UINT stride = sizeof(float) * 4;
+        UINT offset = 0;
+        d3dContext->IASetVertexBuffers(0, 1, &conversionGeometry, &stride, &offset);
+        d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        d3dContext->Draw(3, 0);
     }
 
     RenderUI();
@@ -70,6 +80,7 @@ void Renderer::Destroy()
         window = nullptr;
     }
 
+    d3d_release(conversionGeometry);
     d3d_release(conversionVS);
     d3d_release(conversionPS);
     d3d_release(conversionIL);
@@ -134,11 +145,31 @@ bool Renderer::InitConverter()
 
     D3D11_INPUT_ELEMENT_DESC inputElements[] =
     {
-        { "SV_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        { "SV_POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
     d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &conversionIL);
+
+    struct Vertex
+    {
+        float Position[2];
+        float uv[2];
+    };
+    Vertex vertices[3] =
+    {
+        {{-1, 1}, {0, 0}},
+        {{3, 1}, {2, 0}},
+        {{3, 3}, {0, 2}},
+    };
+
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.ByteWidth = sizeof(vertices);
+    vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertices };
+    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &conversionGeometry);
 
     return true;
 }

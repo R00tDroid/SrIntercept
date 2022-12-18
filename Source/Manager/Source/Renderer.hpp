@@ -41,4 +41,5 @@ private:
     ID3D11VertexShader* conversionVS = nullptr;
     ID3D11PixelShader* conversionPS = nullptr;
     ID3D11InputLayout* conversionIL = nullptr;
+    ID3D11Buffer* conversionGeometry = nullptr;
 };
