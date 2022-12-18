@@ -1,3 +1,6 @@
+Texture2D inputTexture : register(t0);
+SamplerState inputSampler : register(s0);
+
 struct VSIn
 {
     float2 position : SV_Position;
