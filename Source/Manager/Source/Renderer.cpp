@@ -5,6 +5,7 @@
 #include <backends/imgui_impl_win32.h>
 #include "RenderContextProxy.hpp"
 
+struct ConstantBuffer;
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT MessageProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
@@ -12,6 +13,12 @@ LRESULT MessageProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
     ImGui_ImplWin32_WndProcHandler(handle, message, wParam, lParam);
     return DefWindowProcA(handle, message, wParam, lParam);
 }
+
+struct ConversionConstantBuffer
+{
+    float conversionType;
+    float _padding[3];
+};
 
 Renderer Renderer::instance;
 
@@ -44,6 +51,12 @@ void Renderer::Render()
 
     if (selectedRenderContext != -1)
     {
+        D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
+        d3dContext->Map(conversionConstants, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
+        ConversionConstantBuffer* constantBufferData = static_cast<ConversionConstantBuffer*>(constantBufferMapping.pData);
+        constantBufferData->conversionType = (float)conversionMode;
+        d3dContext->Unmap(conversionConstants, 0);
+
         D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f, 1.0f };
         d3dContext->RSSetViewports(1, &viewport);
 
@@ -53,6 +66,7 @@ void Renderer::Render()
         d3dContext->PSSetShader(conversionPS, nullptr, 0);
         d3dContext->IASetInputLayout(conversionIL);
 
+        d3dContext->PSSetConstantBuffers(0, 1, &conversionConstants);
         d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
 
         UINT stride = sizeof(float) * 4;
@@ -80,6 +94,7 @@ void Renderer::Destroy()
         window = nullptr;
     }
 
+    d3d_release(conversionConstants)
     d3d_release(conversionGeometry);
     d3d_release(conversionVS);
     d3d_release(conversionPS);
@@ -170,6 +185,13 @@ bool Renderer::InitConverter()
 
     D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertices };
     d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &conversionGeometry);
+
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = sizeof(ConversionConstantBuffer);
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    d3dDevice->CreateBuffer(&desc, nullptr, &conversionConstants);
 
     return true;
 }

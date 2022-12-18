@@ -7,6 +7,13 @@
 
 class RenderContextProxy;
 
+enum ConversionMode
+{
+    CM_2D = 1,
+    CM_Anaglyph = 2,
+    CM_SBS = 3
+};
+
 class Renderer
 {
 public:
@@ -36,10 +43,13 @@ private:
 
     DirectX::XMINT2 windowSize = { 800, 600 };
 
+    ConversionMode conversionMode = CM_SBS;
+
     int selectedRenderContext = -1;
 
     ID3D11VertexShader* conversionVS = nullptr;
     ID3D11PixelShader* conversionPS = nullptr;
     ID3D11InputLayout* conversionIL = nullptr;
     ID3D11Buffer* conversionGeometry = nullptr;
+    ID3D11Buffer* conversionConstants = nullptr;
 };
