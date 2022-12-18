@@ -16,11 +16,13 @@ set(ResourceFiles
     "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.cso"  
 )
 cmrc_add_resource_library(ManagerResources ALIAS Manager::rc ${ResourceFiles})
+set_target_properties(ManagerResources PROPERTIES FOLDER "Dependencies")
 
 add_library(ManagerShaders SHARED
     ${ShaderFiles}
 )
 set_target_properties(ManagerShaders PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(ManagerShaders PROPERTIES FOLDER "SrIntercept")
 
 add_executable(Manager WIN32
     ${SourceFiles}
