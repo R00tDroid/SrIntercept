@@ -10,8 +10,11 @@ public:
     void PreWeave();
     void PostWeave(unsigned int width, unsigned int height);
 
+    static std::map<ID3D11RenderTargetView*, RenderContext*> instances;
+
+    HANDLE GetShareHandle(DWORD processId);
+
 private:
-    static std::map<ID3D11RenderTargetView*, RenderContext*> Instances;
     RenderContext(ID3D11RenderTargetView* targetView);
 
     ID3D11Device* device = nullptr;
@@ -24,4 +27,6 @@ private:
     HANDLE sharedTextureHandle = nullptr;
     ID3D11Texture2D* sharedTexture = nullptr;
     IDXGIKeyedMutex* sharedTextureLock = nullptr;
+
+    std::map<DWORD, HANDLE> shareHandles;
 };

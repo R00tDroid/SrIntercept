@@ -27,6 +27,13 @@ void ClientMessaging::Stop()
     }
 }
 
+void ClientMessaging::SendRenderContextInfo(RenderContext* renderContext)
+{
+    stream->BeginWrite(PT_RenderContextInfo);
+    stream->Write<HANDLE>(renderContext->GetShareHandle(managerProcessId));
+    stream->EndWrite();
+}
+
 void ClientMessaging::OnPacketReceived(PacketHeader packetType)
 {
     switch (packetType)
@@ -34,6 +41,7 @@ void ClientMessaging::OnPacketReceived(PacketHeader packetType)
         case PT_ManagerInfo:
         {
             managerProcessId = stream->Read<DWORD>();
+            SendExistingRenderContexts();
             break;
         }
     }
@@ -47,6 +55,14 @@ void ClientMessaging::OnStreamOpened()
 void ClientMessaging::OnStreamClosed()
 {
     logger.Log("Disconnected from SrIntercept");
+}
+
+void ClientMessaging::SendExistingRenderContexts()
+{
+    for (auto& it : RenderContext::instances)
+    {
+        SendRenderContextInfo(it.second);
+    }
 }
 
 void ClientMessaging::ThreadFunction()

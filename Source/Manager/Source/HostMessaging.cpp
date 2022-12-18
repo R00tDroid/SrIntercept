@@ -39,6 +39,15 @@ void HostMessaging::SendManagerInfo()
 
 void HostMessaging::OnPacketReceived(PacketHeader packetType)
 {
+    switch (packetType)
+    {
+    case PT_RenderContextInfo:
+    {
+        HANDLE shareHandle = stream->Read<HANDLE>();
+        logger.Log("RenderContext: 0x%x", shareHandle);
+        break;
+    }
+    }
 }
 
 void HostMessaging::OnStreamClosed()
