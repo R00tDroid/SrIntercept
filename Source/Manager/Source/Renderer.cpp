@@ -292,6 +292,9 @@ void Renderer::RenderUI()
 
     d3dContext->Draw(3, 0);
 
+    ID3D11ShaderResourceView* nullSRV = nullptr;
+    d3dContext->PSSetShaderResources(0, 1, &nullSRV);
+
     if (selectedRenderContext >= renderContextProxies.size())
     {
         selectedRenderContext = -1;
