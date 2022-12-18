@@ -4,6 +4,14 @@
 #include <backends/imgui_impl_win32.h>
 #include "RenderContextProxy.hpp"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT MessageProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    ImGui_ImplWin32_WndProcHandler(handle, message, wParam, lParam);
+    return DefWindowProcA(handle, message, wParam, lParam);
+}
+
 Renderer Renderer::instance;
 
 bool Renderer::Init()
@@ -60,7 +68,7 @@ bool Renderer::InitWindow()
     WNDCLASSEXA winClass = {};
     winClass.cbSize = sizeof(WNDCLASSEXA);
     winClass.style = CS_HREDRAW | CS_VREDRAW;
-    winClass.lpfnWndProc = &DefWindowProc;
+    winClass.lpfnWndProc = MessageProc;
     winClass.hInstance = GetModuleHandleA(nullptr);
     winClass.lpszClassName = "WindowClass";
 
@@ -141,9 +149,8 @@ void Renderer::RenderUI()
             ImGui::Image(proxy->framebufferView, ImVec2(100, 50));
             ImGui::Spacing();
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 
     ImGui::Render();
 
