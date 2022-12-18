@@ -246,6 +246,22 @@ void Renderer::RenderUI()
     }
     ImGui::End();
 
+    if (selectedRenderContext != -1) 
+    {
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 260, 10));
+        ImGui::SetNextWindowSize(ImVec2(250, 100));
+        if (ImGui::Begin("Video controls"))
+        {
+            int selectedItem = conversionMode - CM_2D;
+            char* modeNames[] = { "2D", "Anaglyph", "Side by side" };
+            if (ImGui::ListBox("Output format", &selectedItem, modeNames, 3))
+            {
+                conversionMode = static_cast<ConversionMode>(selectedItem + CM_2D);
+            }
+        }
+        ImGui::End();
+    }
+
     ImGui::Render();
 
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
