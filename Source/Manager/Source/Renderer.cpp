@@ -160,7 +160,7 @@ bool Renderer::InitConverter()
     {
         {{-1, 1}, {0, 0}},
         {{3, 1}, {2, 0}},
-        {{3, 3}, {0, 2}},
+        {{-1, -3}, {0, 2}},
     };
 
     D3D11_BUFFER_DESC vertexBufferDesc = {};
