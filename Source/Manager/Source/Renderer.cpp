@@ -42,6 +42,17 @@ void Renderer::Render()
     float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
     d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
 
+    if (selectedRenderContext != -1)
+    {
+        RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
+
+        d3dContext->VSSetShader(conversionVS, nullptr, 0);
+        d3dContext->PSSetShader(conversionPS, nullptr, 0);
+        d3dContext->IASetInputLayout(conversionIL);
+
+        d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
+    }
+
     RenderUI();
 
     dxgiSwapchain->Present(1, 0);
