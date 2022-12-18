@@ -1,9 +1,9 @@
 #pragma once
 #include "ConnectionStream.hpp"
 #include <filesystem>
-#include <Log.hpp>
 #include <softcam.h>
 #include "HostMessaging.hpp"
+#include <cmrc/cmrc.hpp>
 
 class SrInterceptManager
 {
@@ -28,3 +28,5 @@ private:
 
     std::vector<HostMessaging*> clientConnections;
 };
+
+extern cmrc::embedded_filesystem* resourceFS;

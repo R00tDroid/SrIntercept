@@ -1,8 +1,11 @@
 #include "App.hpp"
 #include <Windows.h>
 #include "detours.h"
-#include "Packets.hpp"
 #include "Renderer.hpp"
+#include <Log.hpp>
+
+CMRC_DECLARE(ManagerResources);
+cmrc::embedded_filesystem* resourceFS = nullptr;
 
 std::string Convert(std::wstring string)
 {
@@ -145,4 +148,14 @@ void SrInterceptManager::OnClientConnected(HostConnectionStream* stream)
 {
     logger.Log("Client connected to manager");
     clientConnections.push_back(new HostMessaging(stream));
+}
+
+int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
+{
+    cmrc::embedded_filesystem fs = cmrc::ManagerResources::get_filesystem();
+    resourceFS = &fs;
+
+    SrInterceptManager app;
+    while (app.Update()) {}
+    return S_OK;
 }
