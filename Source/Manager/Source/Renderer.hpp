@@ -33,11 +33,17 @@ public:
 
     std::vector<RenderContextProxy*> renderContextProxies;
 
+    DirectX::XMINT2 bitmapResolution = { 1920, 1080 };
+    unsigned char* bitmapData = nullptr;
+
 private:
     bool InitWindow();
     bool InitD3D();
     bool InitConverter();
     void UpdateWindow();
+
+    void RenderConversion();
+    void UpdateBitmap();
 
     void RenderUI();
 
@@ -53,11 +59,9 @@ private:
     ID3D11Buffer* conversionGeometry = nullptr;
     ID3D11Buffer* conversionConstants = nullptr;
 
-    DirectX::XMINT2 conversionResolution = { 3840, 1080 };
-
     ID3D11Texture2D* conversionTarget = nullptr;
     ID3D11ShaderResourceView* conversionTargetResource = nullptr;
     ID3D11RenderTargetView* conversionTargetView = nullptr;
 
-    ID3D11Texture2D* webcamOutput = nullptr;
+    ID3D11Texture2D* bitmapOutput = nullptr;
 };
