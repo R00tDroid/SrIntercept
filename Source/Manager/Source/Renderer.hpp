@@ -1,8 +1,18 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <vector>
 
 #define d3d_release(x) if (x != nullptr) { x->Release(); x = nullptr; }
+
+class RenderContextProxy;
+
+enum ConversionMode
+{
+    CM_2D = 1,
+    CM_Anaglyph = 2,
+    CM_SBS = 3
+};
 
 class Renderer
 {
@@ -21,12 +31,25 @@ public:
 
     HWND window = nullptr;
 
+    std::vector<RenderContextProxy*> renderContextProxies;
+
 private:
     bool InitWindow();
     bool InitD3D();
+    bool InitConverter();
     void UpdateWindow();
 
     void RenderUI();
 
     DirectX::XMINT2 windowSize = { 800, 600 };
+
+    ConversionMode conversionMode = CM_SBS;
+
+    int selectedRenderContext = -1;
+
+    ID3D11VertexShader* conversionVS = nullptr;
+    ID3D11PixelShader* conversionPS = nullptr;
+    ID3D11InputLayout* conversionIL = nullptr;
+    ID3D11Buffer* conversionGeometry = nullptr;
+    ID3D11Buffer* conversionConstants = nullptr;
 };
