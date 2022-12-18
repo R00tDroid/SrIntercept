@@ -89,6 +89,8 @@ void Renderer::Destroy()
     d3d_release(blitPS);
     d3d_release(quadIL);
 
+    d3d_release(sampler);
+
     d3d_release(backBufferView);
     d3d_release(dxgiSwapchain);
     d3d_release(d3dContext);
@@ -135,6 +137,19 @@ bool Renderer::InitD3D()
     ID3D11Texture2D* backBuffer;
     dxgiSwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
+
+    D3D11_SAMPLER_DESC samplerDesc;
+    memset(&samplerDesc, 0, sizeof(D3D11_SAMPLER_DESC));
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    d3dDevice->CreateSamplerState(&samplerDesc, &sampler);
+
+    d3dContext->PSSetSamplers(0, 1, &sampler);
 
     return true;
 }

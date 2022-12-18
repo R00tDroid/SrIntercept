@@ -66,4 +66,6 @@ private:
     ID3D11RenderTargetView* conversionTargetView = nullptr;
 
     ID3D11Texture2D* bitmapOutput = nullptr;
+
+    ID3D11SamplerState* sampler = nullptr;
 };
