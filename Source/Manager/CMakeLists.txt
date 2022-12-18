@@ -2,6 +2,9 @@ file(GLOB_RECURSE SourceFiles
     ${CMAKE_CURRENT_LIST_DIR}/Source/*.*
 )
 
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Convert_vs.hlsl PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_vs.cso")
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.hlsl PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.cso")
+
 add_executable(Manager WIN32
     ${SourceFiles}
 )
