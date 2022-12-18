@@ -62,7 +62,7 @@ SrInterceptManager::SrInterceptManager()
         }
     }
 
-    outputCamera = scCreateCamera(1920, 1080, 0);
+    outputCamera = scCreateCamera(Renderer::instance.bitmapResolution.x, Renderer::instance.bitmapResolution.y, 0);
 
     Renderer::instance.Init();
 }
@@ -71,7 +71,7 @@ bool SrInterceptManager::Update()
 {
     if (outputCamera != nullptr)
     {
-        scSendFrame(outputCamera, nullptr);
+        scSendFrame(outputCamera, Renderer::instance.bitmapData);
     }
 
     Renderer::instance.Render();

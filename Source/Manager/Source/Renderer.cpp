@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_dx11.h>
 #include <backends/imgui_impl_win32.h>
+#include "Log.hpp"
 #include "RenderContextProxy.hpp"
 
 struct ConstantBuffer;
@@ -24,6 +25,9 @@ Renderer Renderer::instance;
 
 bool Renderer::Init()
 {
+    bitmapData = static_cast<unsigned char*>(malloc(bitmapResolution.x * bitmapResolution.y * 3));
+    memset(bitmapData, 0, bitmapResolution.x * bitmapResolution.y * 3);
+
     if (!InitWindow()) return false;
     if (!InitD3D()) return false;
     if (!InitConverter()) return false;
@@ -44,38 +48,17 @@ void Renderer::Render()
         proxy->UpdateFramebuffer();
     }
 
+    RenderConversion();
+
+    D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f, 1.0f };
+    d3dContext->RSSetViewports(1, &viewport);
+
     d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
 
-    float backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
+    UpdateBitmap();
+
+    float backgroundColor[4] = { 0, 0, 0, 1.0f };
     d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
-
-    if (selectedRenderContext != -1)
-    {
-        D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
-        d3dContext->Map(conversionConstants, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
-        ConversionConstantBuffer* constantBufferData = static_cast<ConversionConstantBuffer*>(constantBufferMapping.pData);
-        constantBufferData->conversionType = (float)conversionMode;
-        d3dContext->Unmap(conversionConstants, 0);
-
-        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)windowSize.x, (float)windowSize.y, 0.0f, 1.0f };
-        d3dContext->RSSetViewports(1, &viewport);
-
-        RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
-
-        d3dContext->VSSetShader(conversionVS, nullptr, 0);
-        d3dContext->PSSetShader(conversionPS, nullptr, 0);
-        d3dContext->IASetInputLayout(conversionIL);
-
-        d3dContext->PSSetConstantBuffers(0, 1, &conversionConstants);
-        d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
-
-        UINT stride = sizeof(float) * 4;
-        UINT offset = 0;
-        d3dContext->IASetVertexBuffers(0, 1, &conversionGeometry, &stride, &offset);
-        d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        d3dContext->Draw(3, 0);
-    }
 
     RenderUI();
 
@@ -94,11 +77,19 @@ void Renderer::Destroy()
         window = nullptr;
     }
 
+    d3d_release(bitmapOutput);
+    d3d_release(conversionTargetView);
+    d3d_release(conversionTargetResource);
+    d3d_release(conversionTarget);
+
     d3d_release(conversionConstants)
-    d3d_release(conversionGeometry);
-    d3d_release(conversionVS);
+    d3d_release(fullscreenQuadGeometry);
+    d3d_release(quadVS);
     d3d_release(conversionPS);
-    d3d_release(conversionIL);
+    d3d_release(blitPS);
+    d3d_release(quadIL);
+
+    d3d_release(sampler);
 
     d3d_release(backBufferView);
     d3d_release(dxgiSwapchain);
@@ -147,16 +138,32 @@ bool Renderer::InitD3D()
     dxgiSwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
     d3dDevice->CreateRenderTargetView(backBuffer, 0, &backBufferView);
 
+    D3D11_SAMPLER_DESC samplerDesc;
+    memset(&samplerDesc, 0, sizeof(D3D11_SAMPLER_DESC));
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    d3dDevice->CreateSamplerState(&samplerDesc, &sampler);
+
+    d3dContext->PSSetSamplers(0, 1, &sampler);
+
     return true;
 }
 
 bool Renderer::InitConverter()
 {
-    cmrc::file fileVS = resourceFS->open("Source/Convert_vs.cso");
-    d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &conversionVS);
+    cmrc::file fileVS = resourceFS->open("Source/Quad_vs.cso");
+    d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &quadVS);
 
     cmrc::file filePS = resourceFS->open("Source/Convert_ps.cso");
     d3dDevice->CreatePixelShader(filePS.begin(), filePS.size(), nullptr, &conversionPS);
+
+    filePS = resourceFS->open("Source/Blit_ps.cso");
+    d3dDevice->CreatePixelShader(filePS.begin(), filePS.size(), nullptr, &blitPS);
 
     D3D11_INPUT_ELEMENT_DESC inputElements[] =
     {
@@ -164,7 +171,7 @@ bool Renderer::InitConverter()
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
-    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &conversionIL);
+    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &quadIL);
 
     struct Vertex
     {
@@ -184,7 +191,7 @@ bool Renderer::InitConverter()
     vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
     D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertices };
-    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &conversionGeometry);
+    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &fullscreenQuadGeometry);
 
     D3D11_BUFFER_DESC desc = {};
     desc.ByteWidth = sizeof(ConversionConstantBuffer);
@@ -192,6 +199,25 @@ bool Renderer::InitConverter()
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     d3dDevice->CreateBuffer(&desc, nullptr, &conversionConstants);
+
+    D3D11_TEXTURE2D_DESC conversionTargetDesc = { 0 };
+    conversionTargetDesc.Width = bitmapResolution.x;
+    conversionTargetDesc.Height = bitmapResolution.y;
+    conversionTargetDesc.MipLevels = 1;
+    conversionTargetDesc.ArraySize = 1;
+    conversionTargetDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    conversionTargetDesc.SampleDesc.Count = 1;
+
+    conversionTargetDesc.Usage = D3D11_USAGE_DEFAULT;
+    conversionTargetDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    d3dDevice->CreateTexture2D(&conversionTargetDesc, nullptr, &conversionTarget);
+    d3dDevice->CreateRenderTargetView(conversionTarget, nullptr, &conversionTargetView);
+    d3dDevice->CreateShaderResourceView(conversionTarget, nullptr, &conversionTargetResource);
+
+    conversionTargetDesc.Usage = D3D11_USAGE_STAGING;
+    conversionTargetDesc.BindFlags = 0;
+    conversionTargetDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    d3dDevice->CreateTexture2D(&conversionTargetDesc, nullptr, &bitmapOutput);
 
     return true;
 }
@@ -206,8 +232,84 @@ void Renderer::UpdateWindow()
     }
 }
 
+void Renderer::RenderConversion()
+{
+    d3dContext->OMSetRenderTargets(1, &conversionTargetView, nullptr);
+
+    D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)bitmapResolution.x, (float)bitmapResolution.y, 0.0f, 1.0f };
+    d3dContext->RSSetViewports(1, &viewport);
+
+    if (selectedRenderContext != -1)
+    {
+        D3D11_MAPPED_SUBRESOURCE constantBufferMapping;
+        d3dContext->Map(conversionConstants, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMapping);
+        ConversionConstantBuffer* constantBufferData = static_cast<ConversionConstantBuffer*>(constantBufferMapping.pData);
+        constantBufferData->conversionType = (float)conversionMode;
+        d3dContext->Unmap(conversionConstants, 0);
+
+        RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
+
+        d3dContext->VSSetShader(quadVS, nullptr, 0);
+        d3dContext->PSSetShader(conversionPS, nullptr, 0);
+        d3dContext->IASetInputLayout(quadIL);
+
+        d3dContext->PSSetConstantBuffers(0, 1, &conversionConstants);
+        d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
+
+        UINT stride = sizeof(float) * 4;
+        UINT offset = 0;
+        d3dContext->IASetVertexBuffers(0, 1, &fullscreenQuadGeometry, &stride, &offset);
+        d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        d3dContext->Draw(3, 0);
+    }
+}
+
+void Renderer::UpdateBitmap()
+{
+    if (selectedRenderContext != -1)
+    {
+        d3dContext->CopyResource(bitmapOutput, conversionTarget);
+
+        D3D11_MAPPED_SUBRESOURCE mapDesc;
+        d3dContext->Map(bitmapOutput, 0, D3D11_MAP_READ, 0, &mapDesc);
+
+        if (mapDesc.pData == nullptr)
+        {
+            logger.Log("Failed to get bitmap data");
+            return;
+        }
+
+        for (int y = 0; y < bitmapResolution.y; y++)
+        {
+            for (int x = 0; x < bitmapResolution.x; x++)
+            {
+                memcpy(&bitmapData[(y * bitmapResolution.x + x) * 3], &static_cast<unsigned char*>(mapDesc.pData)[(y * bitmapResolution.x + x) * 4], 3);
+            }
+        }
+
+        d3dContext->Unmap(bitmapOutput, 0);
+    }
+}
+
 void Renderer::RenderUI()
 {
+    d3dContext->VSSetShader(quadVS, nullptr, 0);
+    d3dContext->PSSetShader(blitPS, nullptr, 0);
+    d3dContext->IASetInputLayout(quadIL);
+
+    d3dContext->PSSetShaderResources(0, 1, &conversionTargetResource);
+
+    UINT stride = sizeof(float) * 4;
+    UINT offset = 0;
+    d3dContext->IASetVertexBuffers(0, 1, &fullscreenQuadGeometry, &stride, &offset);
+    d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    d3dContext->Draw(3, 0);
+
+    ID3D11ShaderResourceView* nullSRV = nullptr;
+    d3dContext->PSSetShaderResources(0, 1, &nullSRV);
+
     if (selectedRenderContext >= renderContextProxies.size())
     {
         selectedRenderContext = -1;

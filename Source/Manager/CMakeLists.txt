@@ -8,12 +8,14 @@ file(GLOB_RECURSE SourceFiles
     ${CMAKE_CURRENT_LIST_DIR}/Source/*.hpp
 )
 
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Convert_vs.hlsl PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_vs.cso")
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Quad_vs.hlsl PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Quad_vs.cso")
 set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.hlsl PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.cso")
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/Source/Blit_ps.hlsl PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL 5.0 VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_LIST_DIR}/Source/Blit_ps.cso")
 
 set(ResourceFiles
-    "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_vs.cso"
-    "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.cso"  
+    "${CMAKE_CURRENT_LIST_DIR}/Source/Quad_vs.cso"
+    "${CMAKE_CURRENT_LIST_DIR}/Source/Convert_ps.cso"
+    "${CMAKE_CURRENT_LIST_DIR}/Source/Blit_ps.cso"
 )
 cmrc_add_resource_library(ManagerResources ALIAS Manager::rc ${ResourceFiles})
 set_target_properties(ManagerResources PROPERTIES FOLDER "Dependencies")

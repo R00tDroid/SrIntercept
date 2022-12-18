@@ -33,11 +33,17 @@ public:
 
     std::vector<RenderContextProxy*> renderContextProxies;
 
+    DirectX::XMINT2 bitmapResolution = { 1920, 1080 };
+    unsigned char* bitmapData = nullptr;
+
 private:
     bool InitWindow();
     bool InitD3D();
     bool InitConverter();
     void UpdateWindow();
+
+    void RenderConversion();
+    void UpdateBitmap();
 
     void RenderUI();
 
@@ -47,9 +53,19 @@ private:
 
     int selectedRenderContext = -1;
 
-    ID3D11VertexShader* conversionVS = nullptr;
+    ID3D11VertexShader* quadVS = nullptr;
     ID3D11PixelShader* conversionPS = nullptr;
-    ID3D11InputLayout* conversionIL = nullptr;
-    ID3D11Buffer* conversionGeometry = nullptr;
+    ID3D11PixelShader* blitPS = nullptr;
+    ID3D11InputLayout* quadIL = nullptr;
     ID3D11Buffer* conversionConstants = nullptr;
+
+    ID3D11Buffer* fullscreenQuadGeometry = nullptr;
+
+    ID3D11Texture2D* conversionTarget = nullptr;
+    ID3D11ShaderResourceView* conversionTargetResource = nullptr;
+    ID3D11RenderTargetView* conversionTargetView = nullptr;
+
+    ID3D11Texture2D* bitmapOutput = nullptr;
+
+    ID3D11SamplerState* sampler = nullptr;
 };
