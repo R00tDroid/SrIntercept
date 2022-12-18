@@ -123,6 +123,10 @@ void Renderer::RenderUI()
     {
         selectedRenderContext = -1;
     }
+    if (selectedRenderContext == -1 && !renderContextProxies.empty())
+    {
+        selectedRenderContext = 0;
+    }
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(windowSize.x), float(windowSize.y));
