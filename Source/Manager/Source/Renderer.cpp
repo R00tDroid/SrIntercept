@@ -84,9 +84,10 @@ void Renderer::Destroy()
 
     d3d_release(conversionConstants)
     d3d_release(fullscreenQuadGeometry);
-    d3d_release(conversionVS);
+    d3d_release(quadVS);
     d3d_release(conversionPS);
-    d3d_release(conversionIL);
+    d3d_release(blitPS);
+    d3d_release(quadIL);
 
     d3d_release(backBufferView);
     d3d_release(dxgiSwapchain);
@@ -141,10 +142,13 @@ bool Renderer::InitD3D()
 bool Renderer::InitConverter()
 {
     cmrc::file fileVS = resourceFS->open("Source/Quad_vs.cso");
-    d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &conversionVS);
+    d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &quadVS);
 
     cmrc::file filePS = resourceFS->open("Source/Convert_ps.cso");
     d3dDevice->CreatePixelShader(filePS.begin(), filePS.size(), nullptr, &conversionPS);
+
+    filePS = resourceFS->open("Source/Blit_ps.cso");
+    d3dDevice->CreatePixelShader(filePS.begin(), filePS.size(), nullptr, &blitPS);
 
     D3D11_INPUT_ELEMENT_DESC inputElements[] =
     {
@@ -152,7 +156,7 @@ bool Renderer::InitConverter()
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
-    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &conversionIL);
+    d3dDevice->CreateInputLayout(inputElements, _countof(inputElements), fileVS.begin(), fileVS.size(), &quadIL);
 
     struct Vertex
     {
@@ -230,9 +234,9 @@ void Renderer::RenderConversion()
 
         RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
 
-        d3dContext->VSSetShader(conversionVS, nullptr, 0);
+        d3dContext->VSSetShader(quadVS, nullptr, 0);
         d3dContext->PSSetShader(conversionPS, nullptr, 0);
-        d3dContext->IASetInputLayout(conversionIL);
+        d3dContext->IASetInputLayout(quadIL);
 
         d3dContext->PSSetConstantBuffers(0, 1, &conversionConstants);
         d3dContext->PSSetShaderResources(0, 1, &proxy->framebufferView);
@@ -275,6 +279,19 @@ void Renderer::UpdateBitmap()
 
 void Renderer::RenderUI()
 {
+    d3dContext->VSSetShader(quadVS, nullptr, 0);
+    d3dContext->PSSetShader(blitPS, nullptr, 0);
+    d3dContext->IASetInputLayout(quadIL);
+
+    d3dContext->PSSetShaderResources(0, 1, &conversionTargetResource);
+
+    UINT stride = sizeof(float) * 4;
+    UINT offset = 0;
+    d3dContext->IASetVertexBuffers(0, 1, &fullscreenQuadGeometry, &stride, &offset);
+    d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    d3dContext->Draw(3, 0);
+
     if (selectedRenderContext >= renderContextProxies.size())
     {
         selectedRenderContext = -1;
@@ -286,8 +303,6 @@ void Renderer::RenderUI()
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(windowSize.x), float(windowSize.y));
-
-    //TODO Render conversion result in background
 
     ImGui_ImplDX11_NewFrame();
     ImGui::NewFrame();

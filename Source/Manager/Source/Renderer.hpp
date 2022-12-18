@@ -53,9 +53,10 @@ private:
 
     int selectedRenderContext = -1;
 
-    ID3D11VertexShader* conversionVS = nullptr;
+    ID3D11VertexShader* quadVS = nullptr;
     ID3D11PixelShader* conversionPS = nullptr;
-    ID3D11InputLayout* conversionIL = nullptr;
+    ID3D11PixelShader* blitPS = nullptr;
+    ID3D11InputLayout* quadIL = nullptr;
     ID3D11Buffer* conversionConstants = nullptr;
 
     ID3D11Buffer* fullscreenQuadGeometry = nullptr;
