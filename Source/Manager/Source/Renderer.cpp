@@ -60,8 +60,6 @@ void Renderer::Render()
     float backgroundColor[4] = { 0, 0, 0, 1.0f };
     d3dContext->ClearRenderTargetView(backBufferView, backgroundColor);
 
-    //TODO Draw conversion result
-
     RenderUI();
 
     dxgiSwapchain->Present(1, 0);
@@ -85,7 +83,7 @@ void Renderer::Destroy()
     d3d_release(conversionTarget);
 
     d3d_release(conversionConstants)
-    d3d_release(conversionGeometry);
+    d3d_release(fullscreenQuadGeometry);
     d3d_release(conversionVS);
     d3d_release(conversionPS);
     d3d_release(conversionIL);
@@ -142,7 +140,7 @@ bool Renderer::InitD3D()
 
 bool Renderer::InitConverter()
 {
-    cmrc::file fileVS = resourceFS->open("Source/Convert_vs.cso");
+    cmrc::file fileVS = resourceFS->open("Source/Quad_vs.cso");
     d3dDevice->CreateVertexShader(fileVS.begin(), fileVS.size(), nullptr, &conversionVS);
 
     cmrc::file filePS = resourceFS->open("Source/Convert_ps.cso");
@@ -174,7 +172,7 @@ bool Renderer::InitConverter()
     vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
     D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertices };
-    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &conversionGeometry);
+    d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &fullscreenQuadGeometry);
 
     D3D11_BUFFER_DESC desc = {};
     desc.ByteWidth = sizeof(ConversionConstantBuffer);
@@ -230,8 +228,6 @@ void Renderer::RenderConversion()
         constantBufferData->conversionType = (float)conversionMode;
         d3dContext->Unmap(conversionConstants, 0);
 
-
-
         RenderContextProxy* proxy = renderContextProxies[selectedRenderContext];
 
         d3dContext->VSSetShader(conversionVS, nullptr, 0);
@@ -243,7 +239,7 @@ void Renderer::RenderConversion()
 
         UINT stride = sizeof(float) * 4;
         UINT offset = 0;
-        d3dContext->IASetVertexBuffers(0, 1, &conversionGeometry, &stride, &offset);
+        d3dContext->IASetVertexBuffers(0, 1, &fullscreenQuadGeometry, &stride, &offset);
         d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         d3dContext->Draw(3, 0);
@@ -290,6 +286,8 @@ void Renderer::RenderUI()
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(windowSize.x), float(windowSize.y));
+
+    //TODO Render conversion result in background
 
     ImGui_ImplDX11_NewFrame();
     ImGui::NewFrame();
