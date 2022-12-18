@@ -111,6 +111,11 @@ void Renderer::UpdateWindow()
 
 void Renderer::RenderUI()
 {
+    if (selectedRenderContext >= renderContextProxies.size())
+    {
+        selectedRenderContext = -1;
+    }
+
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(windowSize.x), float(windowSize.y));
 
@@ -119,11 +124,22 @@ void Renderer::RenderUI()
     ImGui_ImplWin32_NewFrame();
 
     ImGui::SetNextWindowSize(ImVec2(300, 250));
-    if (ImGui::Begin("Sr Intercept"))
+    if (ImGui::Begin("Input list"))
     {
-        for (RenderContextProxy* proxy : renderContextProxies)
+        for (int i = 0; i < renderContextProxies.size(); i++)
         {
+            RenderContextProxy* proxy = renderContextProxies[i];
+
+            if (selectedRenderContext != i)
+            {
+                if (ImGui::Button("Activate"))
+                {
+                    selectedRenderContext = i;
+                }
+            }
+
             ImGui::Image(proxy->framebufferView, ImVec2(100, 50));
+            ImGui::Spacing();
         }
 
         ImGui::End();

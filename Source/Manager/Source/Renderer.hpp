@@ -34,4 +34,6 @@ private:
     void RenderUI();
 
     DirectX::XMINT2 windowSize = { 800, 600 };
+
+    int selectedRenderContext = -1;
 };
