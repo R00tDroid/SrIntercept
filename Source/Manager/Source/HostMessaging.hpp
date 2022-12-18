@@ -1,5 +1,6 @@
 #pragma once
 #include "ConnectionMessaging.hpp"
+#include "RenderContextProxy.hpp"
 
 class HostMessaging : public IConnectionMessaging
 {
@@ -21,4 +22,6 @@ private:
     std::mutex mutex;
 
     bool shouldThreadStop = false;
+
+    std::vector<RenderContextProxy*> renderContextProxies;
 };

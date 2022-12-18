@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_dx11.h>
 #include <backends/imgui_impl_win32.h>
+#include "RenderContextProxy.hpp"
 
 Renderer Renderer::instance;
 
@@ -20,6 +21,11 @@ bool Renderer::Init()
 void Renderer::Render()
 {
     UpdateWindow();
+
+    for (RenderContextProxy* proxy : renderContextProxies)
+    {
+        proxy->UpdateFramebuffer();
+    }
 
     d3dContext->OMSetRenderTargets(1, &backBufferView, nullptr);
 
@@ -115,6 +121,11 @@ void Renderer::RenderUI()
     ImGui::SetNextWindowSize(ImVec2(300, 250));
     if (ImGui::Begin("Sr Intercept"))
     {
+        for (RenderContextProxy* proxy : renderContextProxies)
+        {
+            ImGui::Image(proxy->framebufferView, ImVec2(100, 50));
+        }
+
         ImGui::End();
     }
 

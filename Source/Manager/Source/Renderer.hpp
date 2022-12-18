@@ -1,8 +1,11 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <vector>
 
 #define d3d_release(x) if (x != nullptr) { x->Release(); x = nullptr; }
+
+class RenderContextProxy;
 
 class Renderer
 {
@@ -20,6 +23,8 @@ public:
     ID3D11RenderTargetView* backBufferView = nullptr;
 
     HWND window = nullptr;
+
+    std::vector<RenderContextProxy*> renderContextProxies;
 
 private:
     bool InitWindow();

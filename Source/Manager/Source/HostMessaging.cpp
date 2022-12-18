@@ -1,6 +1,7 @@
 #include "HostMessaging.hpp"
 
 #include "Log.hpp"
+#include "Renderer.hpp"
 
 HostMessaging::HostMessaging(IConnectionStream* inStream)
 {
@@ -44,6 +45,11 @@ void HostMessaging::OnPacketReceived(PacketHeader packetType)
     case PT_RenderContextInfo:
     {
         HANDLE shareHandle = stream->Read<HANDLE>();
+
+        RenderContextProxy* proxy = new RenderContextProxy(shareHandle);
+        renderContextProxies.push_back(proxy);
+        Renderer::instance.renderContextProxies.push_back(proxy);
+
         logger.Log("RenderContext: 0x%x", shareHandle);
         break;
     }
