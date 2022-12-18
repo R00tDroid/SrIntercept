@@ -135,7 +135,8 @@ void Renderer::RenderUI()
     ImGui::NewFrame();
     ImGui_ImplWin32_NewFrame();
 
-    ImGui::SetNextWindowSize(ImVec2(300, 250));
+    ImGui::SetNextWindowPos(ImVec2(10, 10));
+    ImGui::SetNextWindowSize(ImVec2(120, io.DisplaySize.y - 20));
     if (ImGui::Begin("Input list"))
     {
         for (int i = 0; i < renderContextProxies.size(); i++)
